@@ -1,0 +1,24 @@
+for i in 1..5 {
+    print("Count: {i}")
+}
+
+val tags: str[] = ["fast", "backend", "express"]
+for tag in tags {
+    print("Tag: {tag}")
+}
+for index, tag in tags {
+    print("{index}: {tag}")
+}
+
+mut count: int = 0
+for count < 3 {
+    print(count)
+    count++
+}
+print("count ended at {count}")
+
+val scores: map[str: int] = {"single": 42}
+for key, value in scores {
+    print("{key} = {value}")
+}
+print("total: {tags.len()}")

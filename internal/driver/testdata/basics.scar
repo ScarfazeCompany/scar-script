@@ -1,0 +1,33 @@
+val name: str = "Zawiyar"
+val age: int = 25
+print("Hello World")
+print("User {name} ki age {age} hai.")
+print(name, age, true)
+
+const API_URL: str = "https://api.scar.com"
+print(API_URL)
+
+val isAdult: bool = age >= 18 ? true : false
+if age >= 18 and isAdult {
+    print("Access Granted")
+} else if age < 18 {
+    print("Underage")
+} else {
+    print("Access Denied")
+}
+
+val raw: any = {name: "scar"}
+val fallback: str = raw.name or "unknown"
+print("name: {fallback}")
+
+val empty: str = ""
+val d: str = empty or "default"
+print(d)
+
+val n: int = 0
+val m: int = n or 7
+print(m)
+
+val b: bool = false
+val tb: bool = b or true
+print(tb)

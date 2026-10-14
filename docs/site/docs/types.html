@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ScarScript type system — int, dec, str, bool, tuples, inference, and static checking rules.">
+    <title>Type System — ScarScript</title>
+    <link rel="icon" type="image/png" href="../scar_script.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+    <a href="../index.html" class="logo"><img src="../scar_script.png" alt="ScarScript logo"> ScarScript</a>
+    <ul class="topnav-links">
+        <li><a href="../index.html#features">Features</a></li>
+        <li><a href="index.html" style="color:var(--accent)">Docs</a></li>
+        <li><a href="../index.html#download">Download</a></li>
+        <li><a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="getting-started.html" class="btn-sm">Get Started</a></li>
+    </ul>
+    <button class="burger" aria-label="Menu" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+</nav>
+
+<div class="docs-wrap">
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search docs..." oninput="filterNav(this.value)">
+        </div>
+        <div class="sb-group">
+            <h4>Introduction</h4>
+            <a href="index.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Documentation Home</a>
+            <a href="getting-started.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Getting Started</a>
+        </div>
+        <div class="sb-group">
+            <h4>Language Guide</h4>
+            <a href="syntax.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Syntax Overview</a>
+            <a href="types.html" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg> Type System</a>
+            <a href="functions.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><path d="M8 6h8"/><path d="M8 10h8"/><path d="M8 14h5"/></svg> Functions</a>
+        </div>
+        <div class="sb-group">
+            <h4>Reference</h4>
+            <a href="stdlib.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Standard Library</a>
+            <a href="cli.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> CLI Reference</a>
+        </div>
+        <div class="sb-group">
+            <h4>Resources</h4>
+            <a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg> GitHub Repository</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/releases" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Releases</a>
+        </div>
+    </aside>
+    <div class="sb-backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+    <main class="docs-main">
+        <h1>Type System</h1>
+        <p class="lead">ScarScript is statically typed with full compile-time inference. Every expression has a known type before the program runs.</p>
+
+        <h2>Primitive Types</h2>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Type</th><th>Go Backing</th><th>Literals</th><th>Example</th></tr></thead>
+            <tbody>
+                <tr><td><code>int</code></td><td><code>int</code></td><td><code>42</code>, <code>0</code>, <code>-7</code></td><td><code>val n = 42</code></td></tr>
+                <tr><td><code>dec</code></td><td><code>float64</code></td><td><code>3.14</code>, <code>0.5</code></td><td><code>val pi = 3.14</code></td></tr>
+                <tr><td><code>str</code></td><td><code>string</code></td><td><code>"hello"</code></td><td><code>val s = "hi"</code></td></tr>
+                <tr><td><code>bool</code></td><td><code>bool</code></td><td><code>true</code>, <code>false</code></td><td><code>val ok = true</code></td></tr>
+                <tr><td><code>void</code></td><td><code>—</code></td><td>no literal</td><td>functions with no return</td></tr>
+            </tbody>
+        </table></div>
+
+        <h3>int</h3>
+        <p>Signed 64-bit integer. Supports arithmetic, comparison, and modulo.</p>
+<pre><code><span class="kw">val</span> count = <span class="num">42</span>
+<span class="kw">val</span> sum = <span class="num">10</span> + <span class="num">32</span>       <span class="cm">// 42</span>
+<span class="kw">val</span> half = <span class="num">42</span> / <span class="num">2</span>        <span class="cm">// 21 (integer division)</span></code></pre>
+
+        <h3>dec (decimal)</h3>
+        <p>64-bit floating point. Use for prices, measurements, and any fractional value.</p>
+<pre><code><span class="kw">val</span> price = <span class="num">99.99</span>
+<span class="kw">val</span> rate = <span class="num">0.05</span>
+<span class="kw">val</span> pi = <span class="num">3.14159</span>
+
+<span class="cm">// Int literals widen to dec automatically</span>
+<span class="kw">val</span> x: <span class="ty">dec</span> = <span class="num">4</span>           <span class="cm">// 4.0</span>
+<span class="kw">val</span> y = <span class="num">1</span> + <span class="num">2.5</span>         <span class="cm">// 3.5</span></code></pre>
+
+        <div class="callout callout-note">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div><strong>dec vs float:</strong> The keyword is <code>dec</code>, not <code>float</code>. The lexer tokenizes <code>1..5</code> as a range (<code>1</code> .. <code>5</code>), so decimals always require a single dot: <code>1.5</code>.</div>
+        </div>
+
+        <h3>str</h3>
+        <p>Immutable UTF-8 string with built-in methods.</p>
+<pre><code><span class="kw">val</span> name = <span class="str">"Zawiyar"</span>
+<span class="kw">val</span> greeting = <span class="str">"Hello, {name}!"</span>
+
+name.len()            <span class="cm">// 7</span>
+name.upper()          <span class="cm">// "ZAWIYAR"</span>
+name.lower()          <span class="cm">// "zawiyar"</span>
+name.contains(<span class="str">"awi"</span>)  <span class="cm">// true</span></code></pre>
+
+        <h3>bool</h3>
+        <p>Two values: <code>true</code> and <code>false</code>. Produced by comparisons and logical operators.</p>
+<pre><code><span class="kw">val</span> adult = age &gt;= <span class="num">18</span>
+<span class="kw">val</span> ok = a == b <span class="kw">and</span> c != d
+<span class="kw">val</span> off = <span class="kw">not</span> enabled</code></pre>
+
+        <h2>Type Inference</h2>
+        <p>Annotations are optional. The checker infers the type from the right-hand side:</p>
+<pre><code><span class="kw">val</span> a = <span class="num">42</span>           <span class="cm">// inferred int</span>
+<span class="kw">val</span> b = <span class="num">3.14</span>         <span class="cm">// inferred dec</span>
+<span class="kw">val</span> c = <span class="str">"hi"</span>         <span class="cm">// inferred str</span>
+<span class="kw">val</span> d = <span class="kw">true</span>         <span class="cm">// inferred bool</span>
+<span class="kw">val</span> e = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]   <span class="cm">// inferred array of int</span>
+
+<span class="cm">// Explicit annotation still works and is checked</span>
+<span class="kw">val</span> f: <span class="ty">str</span> = <span class="num">42</span>      <span class="cm">// ERROR: expected str, got int</span></code></pre>
+
+        <div class="callout callout-warn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><strong>Inference failure:</strong> If the right side has no type (e.g. an empty array with no context), the compiler reports <code>cannot infer type</code> and asks for an annotation.</div>
+        </div>
+
+        <h2>Tuples &amp; Multiple Returns</h2>
+        <p>Functions can return multiple values as a tuple. Destructure at the call site:</p>
+<pre><code><span class="kw">func</span> <span class="fn">divide</span>(a: <span class="ty">int</span>, b: <span class="ty">int</span>) (<span class="ty">int</span>, <span class="ty">bool</span>) {
+    <span class="kw">if</span> b == <span class="num">0</span> { <span class="kw">return</span> <span class="num">0</span>, <span class="kw">false</span> }
+    <span class="kw">return</span> a / b, <span class="kw">true</span>
+}
+
+<span class="kw">val</span> result, ok = <span class="fn">divide</span>(<span class="num">10</span>, <span class="num">2</span>)   <span class="cm">// result=5, ok=true</span>
+
+<span class="cm">// Or with explicit types</span>
+<span class="kw">val</span> q: <span class="ty">int</span>, ok: <span class="ty">bool</span> = <span class="fn">divide</span>(<span class="num">10</span>, <span class="num">0</span>)</code></pre>
+
+        <p>You can also destructure multiple declarations in one statement:</p>
+<pre><code><span class="kw">val</span> a, b = <span class="num">1</span>, <span class="num">2</span></code></pre>
+
+        <h2>Arrays</h2>
+        <p>Homogeneous collections. The element type is inferred from the first element.</p>
+<pre><code><span class="kw">val</span> nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]        <span class="cm">// []int</span>
+<span class="kw">val</span> names = [<span class="str">"a"</span>, <span class="str">"b"</span>]     <span class="cm">// []str</span>
+<span class="kw">val</span> mixed = [<span class="num">1</span>, <span class="str">"a"</span>]       <span class="cm">// ERROR: heterogeneous array</span>
+
+nums.len()               <span class="cm">// 3</span>
+nums[<span class="num">0</span>]                  <span class="cm">// 1</span></code></pre>
+
+        <h2>Nullable / Optional</h2>
+        <p>Variables can be declared without a value. The <code>or</code> operator provides the fallback:</p>
+<pre><code><span class="kw">val</span> config: <span class="ty">str</span> = <span class="fn">sys.env</span>(<span class="str">"CONFIG"</span>) <span class="kw">or</span> <span class="str">"default"</span>
+<span class="kw">val</span> status = data.status <span class="kw">or</span> <span class="str">"unknown"</span></code></pre>
+
+        <h2>Static Checking Rules</h2>
+        <p>The type checker enforces these rules at compile time. The first error aborts compilation.</p>
+
+        <h3>Assignment compatibility</h3>
+<pre><code><span class="kw">val</span> x: <span class="ty">str</span> = <span class="num">42</span>
+<span class="cm">// error: expected str, got int (line 1, col 11)</span></code></pre>
+
+        <h3>Argument checking</h3>
+<pre><code><span class="fn">math.abs</span>(<span class="num">3.14</span>)
+<span class="cm">// error: argument 1 expects int, got dec</span></code></pre>
+
+        <h3>Missing return</h3>
+<pre><code><span class="kw">func</span> <span class="fn">f</span>() <span class="ty">int</span> {
+    <span class="kw">if</span> <span class="kw">true</span> { <span class="kw">return</span> <span class="num">1</span> }
+    <span class="cm">// error: missing return</span>
+}</code></pre>
+
+        <h3>Unreachable code</h3>
+<pre><code><span class="kw">return</span> <span class="num">1</span>
+<span class="fn">print</span>(<span class="str">"never"</span>)
+<span class="cm">// error: unreachable code</span></code></pre>
+
+        <h3>Arithmetic type mismatch</h3>
+<pre><code><span class="kw">val</span> s = <span class="num">1</span> + <span class="str">"a"</span>
+<span class="cm">// error: cannot add int and str</span></code></pre>
+
+        <div class="callout callout-tip">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+            <div><strong>Error format:</strong> All errors follow <code>file:line:col: error: message</code> — compatible with most editors' error parsers.</div>
+        </div>
+
+        <div class="pager">
+            <a href="syntax.html">
+                <span class="dir">Previous</span>
+                <span class="ttl">&larr; Syntax Overview</span>
+            </a>
+            <a class="next" href="functions.html">
+                <span class="dir">Next</span>
+                <span class="ttl">Functions &rarr;</span>
+            </a>
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('backdrop').classList.toggle('show');
+}
+function filterNav(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.sb-group').forEach(g => {
+        let visible = false;
+        g.querySelectorAll('a').forEach(a => {
+            const match = a.textContent.toLowerCase().includes(q);
+            a.style.display = match ? '' : 'none';
+            if (match) visible = true;
+        });
+        g.style.display = visible ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

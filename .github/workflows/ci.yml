@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Verify formatting
+        run: |
+          if [ "$(gofmt -l .)" ]; then
+            echo "Code not formatted:"
+            gofmt -l .
+            exit 1
+          fi
+
+      - name: Run vet
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.out
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build CLI
+        run: go build -o scar ./cmd/scar
+
+      - name: Test CLI runs
+        run: |
+          ./scar version
+          ./scar run examples/demo.scar > /dev/null
+          ./scar build examples/demo.scar -o demo_bin
+          ./demo_bin > /dev/null
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: scar-linux-amd64
+          path: scar
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build release binaries
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o scar-linux-amd64 ./cmd/scar
+          GOOS=darwin GOARCH=amd64 go build -o scar-darwin-amd64 ./cmd/scar
+          GOOS=darwin GOARCH=arm64 go build -o scar-darwin-arm64 ./cmd/scar
+          GOOS=windows GOARCH=amd64 go build -o scar-windows-amd64.exe ./cmd/scar
+
+      - name: Create checksums
+        run: |
+          sha256sum scar-* > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            scar-linux-amd64
+            scar-darwin-amd64
+            scar-darwin-arm64
+            scar-windows-amd64.exe
+            checksums.txt
+          generate_release_notes: true

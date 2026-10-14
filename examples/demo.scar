@@ -1,0 +1,69 @@
+mut status: str = "pending"
+status = "completed"
+print("Status: {status}")
+
+const API_URL: str = "https://api.scar.com"
+print("API: {API_URL}")
+
+val tags: str[] = ["fast", "backend", "express"]
+val scores: map[str: int] = {"zawiyar": 100, "kashif": 95}
+val rawData: any = { "status": 200 }
+
+val name: str = "Zawiyar"
+val age: int = 25
+
+print("Hello World")
+print("User {name} ki age {age} hai.")
+print(name, age, true)
+
+log.info("Server started on port 8080")
+log.error("Database connection failed")
+
+val isAdult: bool = age >= 18 ? true : false
+val fallback: str = rawData.status or "default_status"
+print("isAdult: {isAdult}, fallback: {fallback}")
+
+if age >= 18 and isAdult {
+    print("Access Granted")
+} else if age < 18 {
+    print("Underage")
+} else {
+    print("Access Denied")
+}
+
+for i in 1..5 {
+    print("Count: {i}")
+}
+
+for tag in tags {
+    print("Tag: {tag}")
+}
+
+for index, tag in tags {
+    print("{index}: {tag}")
+}
+
+mut count: int = 0
+for count < 5 {
+    print(count)
+    count++
+}
+
+val clean: str = name.trim()
+val upper: str = "  zawiyar  ".toUpper()
+val isMatch: bool = name.contains("Zaw")
+print(clean, upper, isMatch)
+
+mut items: str[] = ["apple", "banana"]
+items.add("orange")
+items.remove(0)
+val length: int = items.len()
+print("items: {items}, len: {length}")
+
+for key, value in scores {
+    print("{key} scored {value}")
+}
+
+val raw1: int = 0
+val safe: str = "fallback" or "other"
+print("safe: {safe}")

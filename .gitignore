@@ -1,0 +1,32 @@
+# Binaries
+*.exe
+*.out
+*.test
+scar
+scar-*
+myapp.exe
+driver_test.exe
+gen_golden.go
+demo_new.scar
+
+# Build output
+dist/
+*.gen.go
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage.out
+*.prof
+
+# Temporary
+*.tmp
+*.log

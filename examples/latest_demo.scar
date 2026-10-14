@@ -1,0 +1,27 @@
+// 1. Function with Multiple Return Values & Type Inference
+func divide(a: int, b: int) (int, bool) {
+    if b == 0 {
+        return 0, false
+    }
+    return a / b, true
+}
+
+// 2. Main Logic
+val res, ok = divide(10, 2)
+if ok {
+    print("Division Result: {res}")
+}
+
+// 3. Dec Type Widening & Math Module
+val root: dec = math.sqrt(16)
+print("Square Root of 16 is: {root}")
+
+// 4. File Operations & System ENV
+file.write("test_log.txt", "ScarScript V1.1 Extended Engine Ready!")
+if file.exists("test_log.txt") {
+    val content: str = file.read("test_log.txt")
+    print("File Content: {content}")
+}
+
+val currentPort: str = sys.env("PORT") or "8080"
+print("Server will target port: {currentPort}")

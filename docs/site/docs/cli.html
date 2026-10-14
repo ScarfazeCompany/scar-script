@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ScarScript CLI reference — scar run, scar build, scar version, and error format.">
+    <title>CLI Reference — ScarScript</title>
+    <link rel="icon" type="image/png" href="../scar_script.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+    <a href="../index.html" class="logo"><img src="../scar_script.png" alt="ScarScript logo"> ScarScript</a>
+    <ul class="topnav-links">
+        <li><a href="../index.html#features">Features</a></li>
+        <li><a href="index.html" style="color:var(--accent)">Docs</a></li>
+        <li><a href="../index.html#download">Download</a></li>
+        <li><a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="getting-started.html" class="btn-sm">Get Started</a></li>
+    </ul>
+    <button class="burger" aria-label="Menu" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+</nav>
+
+<div class="docs-wrap">
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search docs..." oninput="filterNav(this.value)">
+        </div>
+        <div class="sb-group">
+            <h4>Introduction</h4>
+            <a href="index.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Documentation Home</a>
+            <a href="getting-started.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Getting Started</a>
+        </div>
+        <div class="sb-group">
+            <h4>Language Guide</h4>
+            <a href="syntax.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Syntax Overview</a>
+            <a href="types.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg> Type System</a>
+            <a href="functions.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><path d="M8 6h8"/><path d="M8 10h8"/><path d="M8 14h5"/></svg> Functions</a>
+        </div>
+        <div class="sb-group">
+            <h4>Reference</h4>
+            <a href="stdlib.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Standard Library</a>
+            <a href="cli.html" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> CLI Reference</a>
+        </div>
+        <div class="sb-group">
+            <h4>Resources</h4>
+            <a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg> GitHub Repository</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/releases" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Releases</a>
+        </div>
+    </aside>
+    <div class="sb-backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+    <main class="docs-main">
+        <h1>CLI Reference</h1>
+        <p class="lead">The <code>scar</code> command-line interface — run programs, build binaries, and check versions.</p>
+
+        <h2>Usage</h2>
+<pre><code>ScarScript compiler v1.0.0
+
+Usage:
+  scar run &lt;file.scar&gt;              Compile and run a program
+  scar build &lt;file.scar&gt; [-o out]   Compile to a native binary
+  scar version                      Print version
+  scar help                         Show this help</code></pre>
+
+        <h2>Commands</h2>
+
+        <h3>scar run</h3>
+        <p>Compiles the file and executes it immediately. Uses a temporary directory for the generated Go source.</p>
+<pre><code>$ scar run hello.scar
+Hello, Zawiyar!</code></pre>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Argument</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>&lt;file.scar&gt;</code></td><td>Yes</td><td>Path to the source file</td></tr>
+            </tbody>
+        </table></div>
+
+        <div class="callout callout-warn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><strong>Go required:</strong> <code>scar run</code> invokes <code>go run</code> under the hood, so Go 1.22+ must be on your PATH. For a Go-free workflow, use <code>scar build</code> on a machine with Go, then ship the binary.</div>
+        </div>
+
+        <h3>scar build</h3>
+        <p>Compiles the file into a standalone native binary. The output has zero runtime dependencies.</p>
+<pre><code># Default output name (derived from source file)
+$ scar build hello.scar
+built hello
+
+# Custom output name
+$ scar build hello.scar -o myapp
+built myapp
+
+# Windows
+&gt; scar build hello.scar -o hello.exe
+built hello.exe</code></pre>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Argument</th><th>Required</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>&lt;file.scar&gt;</code></td><td>Yes</td><td>Path to the source file</td></tr>
+                <tr><td><code>-o out</code></td><td>No</td><td>Output binary path (defaults to source name)</td></tr>
+            </tbody>
+        </table></div>
+
+        <div class="callout callout-tip">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+            <div><strong>Deployment:</strong> The built binary is self-contained. Copy it to any matching OS/arch machine and run it — no ScarScript, no Go, no dependencies.</div>
+        </div>
+
+        <h3>scar version</h3>
+        <p>Prints the compiler version. Aliases: <code>--version</code>, <code>-v</code>.</p>
+<pre><code>$ scar version
+scar version 1.0.0</code></pre>
+
+        <h3>scar help</h3>
+        <p>Prints usage information. Aliases: <code>--help</code>, <code>-h</code>.</p>
+<pre><code>$ scar help</code></pre>
+
+        <h2>Exit Codes</h2>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+            <tbody>
+                <tr><td><code>0</code></td><td>Success</td></tr>
+                <tr><td><code>1</code></td><td>Compilation error (lex/parse/check/codegen)</td></tr>
+                <tr><td><code>2</code></td><td>Usage error (wrong arguments, no args)</td></tr>
+            </tbody>
+        </table></div>
+
+        <h2>Error Format</h2>
+        <p>All compiler errors follow the same machine-parseable format:</p>
+<pre><code>file.scar:LINE:COL: error: MESSAGE</code></pre>
+
+        <p>Examples:</p>
+<pre><code><span class="cm">// Type mismatch</span>
+demo.scar:10:5: error: expected str, got int
+
+<span class="cm">// Argument type</span>
+demo.scar:10:5: error: argument 1 expects int, got dec
+
+<span class="cm">// Missing return</span>
+demo.scar:8:1: error: missing return
+
+<span class="cm">// Reserved name</span>
+demo.scar:5:1: error: "print" is a builtin — cannot be redeclared
+
+<span class="cm">// Inference failure</span>
+demo.scar:9:9: error: cannot infer type</code></pre>
+
+        <div class="callout callout-note">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div><strong>Editor integration:</strong> The <code>file:line:col: error:</code> format is understood by VS Code, Vim/Neovim, and most Go-aware editors out of the box.</div>
+        </div>
+
+        <h2>Compilation Pipeline</h2>
+        <p>Every <code>scar run</code> / <code>scar build</code> executes these stages in order:</p>
+<pre><code>Source (.scar)
+      │
+      ▼
+  ┌────────┐
+  │ Lexer  │  Tokens with positions
+  └───┬────┘
+      ▼
+  ┌────────┐
+  │ Parser │  AST (panic on syntax error)
+  └───┬────┘
+      ▼
+  ┌─────────┐
+  │ Checker │  Static types (first error aborts)
+  └───┬─────┘
+      ▼
+  ┌─────────┐
+  │ Codegen │  Self-contained .gen.go (gofmt'd)
+  └───┬─────┘
+      ▼
+  go run / go build  →  native binary</code></pre>
+
+        <div class="pager">
+            <a href="stdlib.html">
+                <span class="dir">Previous</span>
+                <span class="ttl">&larr; Standard Library</span>
+            </a>
+            <span></span>
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('backdrop').classList.toggle('show');
+}
+function filterNav(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.sb-group').forEach(g => {
+        let visible = false;
+        g.querySelectorAll('a').forEach(a => {
+            const match = a.textContent.toLowerCase().includes(q);
+            a.style.display = match ? '' : 'none';
+            if (match) visible = true;
+        });
+        g.style.display = visible ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

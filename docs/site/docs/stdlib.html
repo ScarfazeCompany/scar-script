@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ScarScript standard library — math, file, sys, time modules with full function reference.">
+    <title>Standard Library — ScarScript</title>
+    <link rel="icon" type="image/png" href="../scar_script.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<nav class="topnav">
+    <a href="../index.html" class="logo"><img src="../scar_script.png" alt="ScarScript logo"> ScarScript</a>
+    <ul class="topnav-links">
+        <li><a href="../index.html#features">Features</a></li>
+        <li><a href="index.html" style="color:var(--accent)">Docs</a></li>
+        <li><a href="../index.html#download">Download</a></li>
+        <li><a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="getting-started.html" class="btn-sm">Get Started</a></li>
+    </ul>
+    <button class="burger" aria-label="Menu" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+</nav>
+
+<div class="docs-wrap">
+    <aside class="sidebar" id="sidebar">
+        <div class="sb-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search docs..." oninput="filterNav(this.value)">
+        </div>
+        <div class="sb-group">
+            <h4>Introduction</h4>
+            <a href="index.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Documentation Home</a>
+            <a href="getting-started.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg> Getting Started</a>
+        </div>
+        <div class="sb-group">
+            <h4>Language Guide</h4>
+            <a href="syntax.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> Syntax Overview</a>
+            <a href="types.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg> Type System</a>
+            <a href="functions.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><path d="M8 6h8"/><path d="M8 10h8"/><path d="M8 14h5"/></svg> Functions</a>
+        </div>
+        <div class="sb-group">
+            <h4>Reference</h4>
+            <a href="stdlib.html" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Standard Library</a>
+            <a href="cli.html"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg> CLI Reference</a>
+        </div>
+        <div class="sb-group">
+            <h4>Resources</h4>
+            <a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg> GitHub Repository</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/releases" target="_blank" rel="noopener"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Releases</a>
+        </div>
+    </aside>
+    <div class="sb-backdrop" id="backdrop" onclick="toggleSidebar()"></div>
+
+    <main class="docs-main">
+        <h1>Standard Library</h1>
+        <p class="lead">Four built-in modules — <code>math</code>, <code>file</code>, <code>sys</code>, <code>time</code> — plus global <code>print</code> and <code>log</code>. No imports needed.</p>
+
+        <div class="callout callout-note">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <div><strong>Auto-imported:</strong> Modules are resolved at compile time. The code generator emits the needed Go imports only when you actually call a module function.</div>
+        </div>
+
+        <h2>Built-in Functions</h2>
+
+        <h3>print(value)</h3>
+        <p>Prints any value to stdout followed by a newline.</p>
+<pre><code><span class="fn">print</span>(<span class="str">"Hello"</span>)          <span class="cm">// Hello</span>
+<span class="fn">print</span>(<span class="num">42</span>)                <span class="cm">// 42</span>
+<span class="fn">print</span>(<span class="str">"x={x}, y={y}"</span>)   <span class="cm">// interpolation works</span></code></pre>
+
+        <h3>log(level, message)</h3>
+        <p>Structured logging with a timestamp, level tag, and message.</p>
+<pre><code><span class="fn">log</span>(<span class="str">"INFO"</span>, <span class="str">"Server started on port 8080"</span>)
+<span class="cm">// [INFO] 2026/09/27 18:36:27 Server started on port 8080</span>
+
+<span class="fn">log</span>(<span class="str">"ERROR"</span>, <span class="str">"Database connection failed"</span>)
+<span class="cm">// [ERROR] 2026/09/27 18:36:27 Database connection failed</span></code></pre>
+
+        <h2>math</h2>
+        <p>Mathematical functions. Arguments are type-checked strictly.</p>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>math.sqrt</code></td><td><code>(dec) dec</code></td><td>Square root. Negative input returns NaN.</td></tr>
+                <tr><td><code>math.pow</code></td><td><code>(dec, dec) dec</code></td><td>Raises x to the power y.</td></tr>
+                <tr><td><code>math.abs</code></td><td><code>(int) int</code></td><td>Absolute value. <strong>Requires int.</strong></td></tr>
+                <tr><td><code>math.round</code></td><td><code>(dec) int</code></td><td>Round half-away-from-zero.</td></tr>
+                <tr><td><code>math.rand</code></td><td><code>(int, int) int</code></td><td>Pseudo-random int in <code>[lo, hi]</code> inclusive.</td></tr>
+            </tbody>
+        </table></div>
+
+<pre><code><span class="kw">val</span> root = math.<span class="fn">sqrt</span>(<span class="num">16</span>)           <span class="cm">// 4.0</span>
+<span class="kw">val</span> area = math.<span class="fn">pow</span>(<span class="num">10</span>, <span class="num">2</span>)         <span class="cm">// 100.0</span>
+<span class="kw">val</span> diff = math.<span class="fn">abs</span>(-<span class="num">45</span>)            <span class="cm">// 45</span>
+<span class="kw">val</span> r    = math.<span class="fn">round</span>(<span class="num">4.7</span>)          <span class="cm">// 5</span>
+<span class="kw">val</span> dice = math.<span class="fn">rand</span>(<span class="num">1</span>, <span class="num">6</span>)          <span class="cm">// 1..6</span></code></pre>
+
+        <div class="callout callout-warn">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><strong>Strict args:</strong> <code>math.abs(3.14)</code> fails with <code>argument 1 expects int, got dec</code>. Use <code>math.round</code> first if you need to convert.</div>
+        </div>
+
+        <h2>file</h2>
+        <p>File system operations. All functions panic on I/O failure with a descriptive message.</p>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>file.write</code></td><td><code>(path: str, content: str)</code></td><td>Create/overwrite a file.</td></tr>
+                <tr><td><code>file.append</code></td><td><code>(path: str, content: str)</code></td><td>Append to a file (creates if missing).</td></tr>
+                <tr><td><code>file.read</code></td><td><code>(path: str) str</code></td><td>Read entire file into a string.</td></tr>
+                <tr><td><code>file.exists</code></td><td><code>(path: str) bool</code></td><td>Check whether a path exists.</td></tr>
+                <tr><td><code>file.delete</code></td><td><code>(path: str)</code></td><td>Delete a file. Panics if missing.</td></tr>
+            </tbody>
+        </table></div>
+
+<pre><code>file.<span class="fn">write</span>(<span class="str">"config.json"</span>, <span class="str">`{"debug": true}`</span>)
+file.<span class="fn">append</span>(<span class="str">"access.log"</span>, <span class="str">"{time.now()} - Request\n"</span>)
+
+<span class="kw">if</span> file.<span class="fn">exists</span>(<span class="str">"cache.dat"</span>) {
+    <span class="kw">val</span> data = file.<span class="fn">read</span>(<span class="str">"cache.dat"</span>)
+}
+
+file.<span class="fn">delete</span>(<span class="str">"temp.tmp"</span>)</code></pre>
+
+        <div class="callout callout-tip">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>
+            <div><strong>Safe pattern:</strong> Always check <code>file.exists</code> before <code>file.read</code> or <code>file.delete</code> when the operation is optional.</div>
+        </div>
+
+        <h2>sys</h2>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>sys.env</code></td><td><code>(name: str) str</code></td><td>Environment variable, or empty string.</td></tr>
+            </tbody>
+        </table></div>
+
+<pre><code><span class="kw">val</span> port  = <span class="fn">sys.env</span>(<span class="str">"PORT"</span>) <span class="kw">or</span> <span class="str">"8080"</span>
+<span class="kw">val</span> db    = <span class="fn">sys.env</span>(<span class="str">"DATABASE_URL"</span>)
+<span class="kw">val</span> debug = <span class="fn">sys.env</span>(<span class="str">"DEBUG"</span>) == <span class="str">"1"</span></code></pre>
+
+        <h2>time</h2>
+
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Function</th><th>Signature</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>time.now</code></td><td><code>() str</code></td><td>Current local time as <code>2006-01-02 15:04:05</code>.</td></tr>
+                <tr><td><code>time.sleep</code></td><td><code>(ms: int)</code></td><td>Block for the given milliseconds.</td></tr>
+            </tbody>
+        </table></div>
+
+<pre><code><span class="kw">val</span> started = <span class="fn">time.now</span>()
+<span class="fn">print</span>(<span class="str">"Booted at {started}"</span>)
+
+<span class="fn">time.sleep</span>(<span class="num">2000</span>)   <span class="cm">// wait 2 seconds</span></code></pre>
+
+        <h2>String Methods</h2>
+        <p>Available on every <code>str</code> value:</p>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Method</th><th>Returns</th><th>Example</th></tr></thead>
+            <tbody>
+                <tr><td><code>s.len()</code></td><td><code>int</code></td><td><code>"abc".len()</code> &rarr; <code>3</code></td></tr>
+                <tr><td><code>s.upper()</code></td><td><code>str</code></td><td><code>"hi".upper()</code> &rarr; <code>"HI"</code></td></tr>
+                <tr><td><code>s.lower()</code></td><td><code>str</code></td><td><code>"HI".lower()</code> &rarr; <code>"hi"</code></td></tr>
+                <tr><td><code>s.contains(x)</code></td><td><code>bool</code></td><td><code>"hello".contains("ell")</code> &rarr; <code>true</code></td></tr>
+            </tbody>
+        </table></div>
+
+        <h2>Array Methods</h2>
+        <div class="tbl-wrap"><table>
+            <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>a.len()</code></td><td><code>int</code></td><td>Number of elements.</td></tr>
+                <tr><td><code>a.push(x)</code></td><td><code>void</code></td><td>Append an element (requires <code>mut</code>).</td></tr>
+            </tbody>
+        </table></div>
+
+        <h2>Quick Reference</h2>
+<pre><code><span class="cm">// Output</span>
+<span class="fn">print</span>(value)                          <span class="fn">log</span>(level, msg)
+
+<span class="cm">// Math</span>
+math.<span class="fn">sqrt</span>(x)   math.<span class="fn">pow</span>(x, y)   math.<span class="fn">abs</span>(n)
+math.<span class="fn">round</span>(x)  math.<span class="fn">rand</span>(lo, hi)
+
+<span class="cm">// File</span>
+file.<span class="fn">write</span>(p, c)  file.<span class="fn">append</span>(p, c)  file.<span class="fn">read</span>(p)
+file.<span class="fn">exists</span>(p)    file.<span class="fn">delete</span>(p)
+
+<span class="cm">// System</span>
+<span class="fn">sys.env</span>(name)
+
+<span class="cm">// Time</span>
+time.<span class="fn">now</span>()  time.<span class="fn">sleep</span>(ms)</code></pre>
+
+        <div class="pager">
+            <a href="functions.html">
+                <span class="dir">Previous</span>
+                <span class="ttl">&larr; Functions</span>
+            </a>
+            <a class="next" href="cli.html">
+                <span class="dir">Next</span>
+                <span class="ttl">CLI Reference &rarr;</span>
+            </a>
+        </div>
+    </main>
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('backdrop').classList.toggle('show');
+}
+function filterNav(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.sb-group').forEach(g => {
+        let visible = false;
+        g.querySelectorAll('a').forEach(a => {
+            const match = a.textContent.toLowerCase().includes(q);
+            a.style.display = match ? '' : 'none';
+            if (match) visible = true;
+        });
+        g.style.display = visible ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

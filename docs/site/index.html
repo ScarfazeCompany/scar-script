@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="ScarScript — Pakistan's first high-performance compiled language with Express-like syntax. Statically typed, transpiles to Go, zero runtime.">
+    <meta name="keywords"
+        content="ScarScript, programming language, compiled language, Go transpiler, Express-like syntax, static typing, Scarfaze, Zawiyar Awan">
+    <meta name="author" content="Zawiyar Awan, Scarfaze">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://scarscript.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ScarScript — High-Performance Compiled Language">
+    <meta property="og:description"
+        content="Express-like syntax. Go performance. Zero runtime. Statically typed compiled language.">
+    <meta property="og:url" content="https://scarscript.dev/">
+    <meta property="og:image" content="https://scarscript.dev/scar_script.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ScarScript — High-Performance Compiled Language">
+    <meta name="twitter:description" content="Express-like syntax. Go performance. Zero runtime.">
+    <meta name="twitter:image" content="https://scarscript.dev/scar_script.png">
+    <title>ScarScript — Pakistan's First High-Performance Compiled Language</title>
+    <link rel="icon" type="image/png" href="scar_script.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"ProgrammingLanguage","name":"ScarScript","description":"A statically-typed, compiled scripting language that transpiles to Go with Express-like syntax.","url":"https://scarscript.dev/","image":"https://scarscript.dev/scar_script.png","author":{"@type":"Person","name":"Zawiyar Awan"},"publisher":{"@type":"Organization","name":"Scarfaze"},"codeRepository":"https://github.com/ScarfazeCompany/scar-script","license":"https://opensource.org/licenses/MIT"}
+    </script>
+</head>
+
+<body>
+
+    <nav class="topnav">
+        <a href="#" class="logo"><img src="scar_script.png" alt="ScarScript logo"> ScarScript</a>
+        <ul class="topnav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#install">Install</a></li>
+            <li><a href="#download">Download</a></li>
+            <li><a href="docs/index.html">Docs</a></li>
+            <li><a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="docs/getting-started.html" class="btn-sm">Get Started</a></li>
+        </ul>
+        <button class="burger" aria-label="Menu"
+            onclick="document.querySelector('.topnav-links').style.display='flex';this.style.display='none'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+        </button>
+    </nav>
+
+    <header class="hero">
+        <img src="scar_script.png" alt="ScarScript logo">
+        <h1>The <span class="grad">Express-Like</span><br>Compiled Language</h1>
+        <p class="sub">Pakistan's first high-performance compiled language. Static typing, Go-powered performance, zero
+            runtime — with syntax you already love.</p>
+        <div class="hero-btns">
+            <a href="docs/getting-started.html" class="btn btn-primary">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Quick Start
+            </a>
+            <a href="docs/index.html" class="btn btn-outline">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                Read the Docs
+            </a>
+            <a href="https://github.com/ScarfazeCompany/scar-script" class="btn btn-outline" target="_blank" rel="noopener">
+                <svg class="ic" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3" />
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </header>
+
+    <div class="meta-strip">
+        <span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+            </svg> Written in Go</span>
+        <span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg> Native binaries</span>
+        <span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg> MIT License</span>
+        <span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg> Cross-platform</span>
+    </div>
+
+    <hr class="half">
+
+    <section id="features">
+        <h2 class="sec-title">Why ScarScript?</h2>
+        <p class="sec-sub">Everything you need in a modern language — nothing you don't.</p>
+        <div class="grid">
+            <div class="card">
+                <div class="card-ic ic-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg></div>
+                <h3>Compiled &amp; Fast</h3>
+                <p>Transpiles to Go, then compiles to a native binary. No interpreter, no VM — just raw performance.</p>
+            </div>
+            <div class="card">
+                <div class="card-ic ic-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <polyline points="9 12 11 14 15 10" />
+                    </svg></div>
+                <h3>Static Type Checking</h3>
+                <p>Catch bugs at compile time with full type inference, strict rules, and precise
+                    <code>file:line:col</code> errors.</p>
+            </div>
+            <div class="card">
+                <div class="card-ic ic-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg></div>
+                <h3>Express-Like Syntax</h3>
+                <p><code>func</code>, <code>val</code>, <code>for..in</code>, string interpolation — feels familiar from
+                    day one.</p>
+            </div>
+            <div class="card">
+                <div class="card-ic ic-orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="8 6 2 12 8 18" />
+                        <polyline points="16 6 22 12 16 18" />
+                    </svg></div>
+                <h3>Multiple Returns</h3>
+                <p>Go-style <code>(int, bool)</code> tuples with destructuring: <code>val a, b = divide(10, 2)</code>.
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-ic ic-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg></div>
+                <h3>Zero Dependencies</h3>
+                <p>Built-in modules: <code>math</code>, <code>file</code>, <code>sys</code>, <code>time</code>. No
+                    package manager needed.</p>
+            </div>
+            <div class="card">
+                <div class="card-ic ic-pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg></div>
+                <h3>Anonymous Functions</h3>
+                <p>Full closures with variable capture. Functional patterns work out of the box.</p>
+            </div>
+        </div>
+    </section>
+
+    <hr class="half">
+
+    <section id="install">
+        <h2 class="sec-title">Quick Start</h2>
+        <p class="sec-sub">Up and running in under a minute.</p>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab(this,'go')">Go Install</button>
+            <button class="tab" onclick="showTab(this,'win')">Windows</button>
+            <button class="tab" onclick="showTab(this,'linux')">Linux / macOS</button>
+        </div>
+        <div id="tab-go">
+            <pre><code><span class="cm"># Install from source</span>
+go install github.com/ScarfazeCompany/scar-script/cmd/scar@latest
+
+<span class="cm"># hello.scar</span>
+<span class="kw">func</span> <span class="fn">greet</span>(name: <span class="ty">str</span>) {
+    <span class="fn">print</span>(<span class="str">"Hello, {name}!"</span>)
+}
+
+<span class="fn">greet</span>(<span class="str">"Zawiyar"</span>)
+
+<span class="cm"># Run it</span>
+scar run hello.scar</code></pre>
+        </div>
+        <div id="tab-win" style="display:none">
+            <pre><code><span class="cm"># Download scar-windows-amd64.exe from Releases</span>
+<span class="cm"># Rename to scar.exe, then:</span>
+
+scar.exe run hello.scar
+scar.exe build hello.scar -o hello.exe</code></pre>
+        </div>
+        <div id="tab-linux" style="display:none">
+            <pre><code><span class="cm"># Download scar-linux-amd64 from Releases</span>
+chmod +x scar-linux-amd64
+mv scar-linux-amd64 /usr/local/bin/scar
+
+scar run hello.scar
+scar build hello.scar -o hello</code></pre>
+        </div>
+    </section>
+
+    <hr class="half">
+
+    <section id="download">
+        <h2 class="sec-title">Download</h2>
+        <p class="sec-sub">Pre-built binaries for every platform — no Go required.</p>
+        <div class="downloads">
+            <div class="dl-card">
+                <div class="dl-ic"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M3 5.5L10.5 4.4v7.1H3V5.5zM11.5 4.2L21 3v8.5h-9.5V4.2zM3 12.5h7.5v7.1L3 18.5v-6zM11.5 12.5H21V21l-9.5-1.3v-7.2z" />
+                    </svg></div>
+                <h3>Windows</h3>
+                <p>scar-windows-amd64.exe</p>
+                <a href="https://github.com/ScarfazeCompany/scar-script/releases/latest" target="_blank"
+                    rel="noopener">Download</a>
+            </div>
+            <div class="dl-card">
+                <div class="dl-ic"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12.5 2c-1.7 0-2.9 1.4-2.9 3.2 0 1.1.3 1.8.3 2.7 0 .8-1 1.9-2.4 3.7-1.3 1.7-2.8 3.6-3.6 5.7-.6 1.5-.7 2.8-.3 3.5.4.7 1.3.7 2.2.4.4 1.4 1.5 2.5 3.1 2.9 1.7.4 3.6-.1 4.8-1.3 1-.9 1.6-2.2 1.6-3.5 0-.4-.3-.7-.7-.7-.4 0-.7.3-.7.7 0 .7-.3 1.4-.7 1.9-.6.6-1.5.9-2.4.7-.9-.2-1.5-.9-1.7-1.8-.6.2-1.3.2-1.9-.1-.7-.3-1.1-1-1.1-1.8 0-.3.1-.5.3-.7-.4-.4-.7-1-.7-1.7 0-.8.4-1.5 1-2 .5.5 1.2.8 1.9.8.4 0 .7-.3.7-.7s-.3-.7-.7-.7c-.3 0-.5-.1-.7-.3.4-.6 1.1-1 1.9-1 .4 0 .7-.3.7-.7V7.2c0-.4.3-.7.7-.7.4 0 .7.3.7.7v1.9c0 .4.3.7.7.7.4 0 .7-.3.7-.7V6.9c0-1.9-1.2-3.3-2.9-3.3h-.6z" />
+                    </svg></div>
+                <h3>Linux</h3>
+                <p>scar-linux-amd64</p>
+                <a href="https://github.com/ScarfazeCompany/scar-script/releases/latest" target="_blank"
+                    rel="noopener">Download</a>
+            </div>
+            <div class="dl-card">
+                <div class="dl-ic"><svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M18.7 12.6c0-2.2 1.8-3.3 1.9-3.4-1-1.5-2.6-1.7-3.2-1.7-1.4-.1-2.7.8-3.3.8-.7 0-1.7-.8-2.8-.8-1.4 0-2.8.8-3.5 2.1-1.5 2.6-.4 6.5 1.1 8.6.7 1 1.6 2.2 2.7 2.1 1.1 0 1.5-.7 2.8-.7s1.7.7 2.8.7c1.2 0 1.9-1 2.6-2.1.8-1.2 1.2-2.3 1.2-2.4-.1 0-2.3-.9-2.3-3.2zM16.3 5.7c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1.1 1.7-.9 2.6 1 .1 2-.5 2.6-1.2z" />
+                    </svg></div>
+                <h3>macOS</h3>
+                <p>darwin-arm64 / amd64</p>
+                <a href="https://github.com/ScarfazeCompany/scar-script/releases/latest" target="_blank"
+                    rel="noopener">Download</a>
+            </div>
+            <div class="dl-card">
+                <div class="dl-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg></div>
+                <h3>Go Install</h3>
+                <p>go install @latest</p>
+                <a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">View Source</a>
+            </div>
+        </div>
+    </section>
+
+    <hr class="half">
+
+    <section>
+        <h2 class="sec-title">Language at a Glance</h2>
+        <p class="sec-sub">Readable like JavaScript. Safe like Go. Fast as a binary.</p>
+        <pre><code><span class="cm">// Type inference — just use val / mut / const</span>
+<span class="kw">val</span> name = <span class="str">"Zawiyar"</span>        <span class="cm">// str</span>
+<span class="kw">mut</span> count = <span class="num">0</span>              <span class="cm">// int</span>
+<span class="kw">val</span> price = <span class="num">99.99</span>           <span class="cm">// dec</span>
+
+<span class="cm">// Functions with multiple returns</span>
+<span class="kw">func</span> <span class="fn">divide</span>(a: <span class="ty">int</span>, b: <span class="ty">int</span>) (<span class="ty">int</span>, <span class="ty">bool</span>) {
+    <span class="kw">if</span> b == <span class="num">0</span> { <span class="kw">return</span> <span class="num">0</span>, <span class="kw">false</span> }
+    <span class="kw">return</span> a / b, <span class="kw">true</span>
+}
+
+<span class="kw">val</span> result, ok = <span class="fn">divide</span>(<span class="num">10</span>, <span class="num">2</span>)
+
+<span class="cm">// Closures</span>
+<span class="kw">val</span> double = <span class="kw">func</span>(x: <span class="ty">int</span>) <span class="ty">int</span> { <span class="kw">return</span> x * <span class="num">2</span> }
+
+<span class="cm">// Smart fallbacks</span>
+<span class="kw">val</span> port = sys.<span class="fn">env</span>(<span class="str">"PORT"</span>) <span class="kw">or</span> <span class="str">"8080"</span>
+
+<span class="cm">// Built-in modules</span>
+<span class="kw">val</span> root = math.<span class="fn">sqrt</span>(<span class="num">16</span>)     <span class="cm">// 4.0</span>
+file.<span class="fn">write</span>(<span class="str">"log.txt"</span>, <span class="str">"started"</span>)</code></pre>
+    </section>
+
+    <hr class="half">
+
+    <section id="docs">
+        <h2 class="sec-title">Documentation</h2>
+        <p class="sec-sub">Everything you need to master ScarScript.</p>
+        <div class="docs-grid">
+            <a class="doc-card" href="docs/getting-started.html">
+                <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polygon points="10 8 16 12 10 16 10 8" />
+                    </svg> Getting Started</h3>
+                <p>Install ScarScript and run your first program in minutes.</p>
+            </a>
+            <a class="doc-card" href="docs/syntax.html">
+                <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg> Language Syntax</h3>
+                <p>Variables, control flow, loops, operators, and string interpolation.</p>
+            </a>
+            <a class="doc-card" href="docs/functions.html">
+                <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                        <path d="M8 6h8" />
+                        <path d="M8 10h8" />
+                        <path d="M8 14h5" />
+                    </svg> Functions</h3>
+                <p>Declarations, multiple returns, closures, and recursion.</p>
+            </a>
+            <a class="doc-card" href="docs/stdlib.html">
+                <h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    </svg> Standard Library</h3>
+                <p>math, file, sys, time — full reference with examples.</p>
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="foot-links">
+            <a href="docs/index.html">Docs</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/issues" target="_blank" rel="noopener">Issues</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/releases" target="_blank" rel="noopener">Releases</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/CONTRIBUTING.md" target="_blank"
+                rel="noopener">Contributing</a>
+            <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE" target="_blank"
+                rel="noopener">License</a>
+        </div>
+        <p>Built by <strong>Zawiyar Awan</strong> — <strong>Scarfaze</strong></p>
+        <p>Pakistan's First High-Performance Compiled Language with Express-Like Syntax</p>
+        <p style="margin-top:0.8rem;font-size:0.8rem;">&copy; 2026 Scarfaze. MIT License.</p>
+    </footer>
+
+    <script>
+        function showTab(btn, id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            ['go', 'win', 'linux'].forEach(t => {
+                document.getElementById('tab-' + t).style.display = (t === id) ? 'block' : 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>

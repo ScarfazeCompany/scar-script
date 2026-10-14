@@ -1,0 +1,41 @@
+func add(a: int, b: int) int {
+    return a + b
+}
+
+func greet(name: str) {
+    print("Hello, {name}!")
+}
+
+func divide(a: int, b: int) (int, bool) {
+    if b == 0 {
+        return 0, false
+    }
+    return a / b, true
+}
+
+func fact(n: int) int {
+    if n <= 1 {
+        return 1
+    }
+    return n * fact(n - 1)
+}
+
+val multiply = func(x: int, y: int) int {
+    return x * y
+}
+
+val result: int = add(10, 20)
+greet("Zawiyar")
+print(result)
+print(multiply(4, 5))
+print(fact(5))
+
+val res, ok = divide(10, 2)
+if ok {
+    print("Result: {res}")
+}
+
+val zero, ok2 = divide(5, 0)
+if !ok2 {
+    print("Division failed")
+}

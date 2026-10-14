@@ -1,0 +1,27 @@
+val sq: dec = math.sqrt(16)
+val pw: dec = math.pow(2, 3)
+val av: int = math.abs(-45)
+val rd: int = math.round(4.7)
+print(sq)
+print(pw)
+print(av)
+print(rd)
+
+val d1: dec = 4.7 + 1
+val d2: dec = 1 + 4.7
+print(d1)
+print(d2)
+
+file.write("scar_test_notes.txt", "Hello from ScarScript!")
+file.append("scar_test_notes.txt", "\nNew log line.")
+val content: str = file.read("scar_test_notes.txt")
+print(content)
+if file.exists("scar_test_notes.txt") {
+    file.delete("scar_test_notes.txt")
+}
+print(file.exists("scar_test_notes.txt"))
+
+val envPort: str = sys.env("SCAR_TEST_UNLIKELY_VAR_XYZ") or "8080"
+print(envPort)
+time.sleep(10)
+print(time.now().len() > 0)

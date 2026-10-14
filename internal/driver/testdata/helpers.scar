@@ -1,0 +1,26 @@
+val name: str = "  Zawiyar Awan  "
+print("[{name.trim()}]")
+print(name.trim().toUpper())
+print(name.contains("Zaw"))
+
+mut items: str[] = ["apple", "banana"]
+items.add("orange")
+print(items.len())
+items.remove(0)
+print(items)
+
+val arr: int[] = [1, 2, 3]
+print(arr[1], arr.len())
+
+val n: int = 5
+val big: bool = n > 3 and n < 10
+print(big)
+val neg: int = -n * 2
+print(neg)
+
+val age: int = 17
+val label: str = age >= 18 ? "adult" : "minor"
+print(label)
+
+val f: int = 3 * (2 + 4)
+print(f)
