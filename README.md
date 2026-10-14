@@ -237,13 +237,13 @@ scar run hello.scar
 
 ### 📚 Documentation
 
-- 🌐 **[Documentation Site](docs/site/index.html)** — full docs with sidebar navigation
-- [Getting Started](docs/site/docs/getting-started.html)
-- [Language Syntax](docs/site/docs/syntax.html)
-- [Type System](docs/site/docs/types.html)
-- [Functions](docs/site/docs/functions.html)
-- [Standard Library](docs/site/docs/stdlib.html)
-- [CLI Reference](docs/site/docs/cli.html)
+- 🌐 **[Documentation Site](https://scarscript.scarfaze.com/docs/index.html)** — full docs with sidebar navigation
+- [Getting Started](https://scarscript.scarfaze.com/docs/getting-started.html)
+- [Language Syntax](https://scarscript.scarfaze.com/docs/syntax.html)
+- [Type System](https://scarscript.scarfaze.com/docs/types.html)
+- [Functions](https://scarscript.scarfaze.com/docs/functions.html)
+- [Standard Library](https://scarscript.scarfaze.com/docs/stdlib.html)
+- [CLI Reference](https://scarscript.scarfaze.com/docs/cli.html)
 
 ---
 
