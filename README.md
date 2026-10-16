@@ -17,6 +17,33 @@
 
 ---
 
+## 📢 Language Development Announcement
+
+> [!IMPORTANT]
+> **This language is under active development.**
+
+As this is a new programming language developed by **Team Scarfaze**, some bugs and unexpected issues have been identified during testing and usage.
+
+We sincerely thank everyone who has tested the language, reported bugs, and provided valuable feedback. Your contributions help us identify issues and improve the language.
+
+### 🛠️ What We're Doing
+
+- Fixing the reported bugs and unexpected issues.
+- Improving language stability and reliability.
+- Working on improvements for the upcoming release.
+
+### 🚀 Upcoming Release
+
+The **Scarfaze team** is actively working on fixing these issues. A new version with bug fixes and improvements will be released soon.
+
+We appreciate your patience, support, and contribution as we continue to develop and improve this language.
+
+**Thank you for being part of this journey!**
+
+— **Team Scarfaze**
+
+---
+
 **ScarScript** is a statically-typed, compiled scripting language that transpiles to Go. It combines the readability of Express.js-style syntax with the performance and safety of Go.
 
 ### ✨ Key Features
