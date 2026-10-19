@@ -369,3 +369,4 @@ func main() {
 ## 10. Version
 
 Current: **v1.0.0** — specification frozen.
+

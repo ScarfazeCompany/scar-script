@@ -45,7 +45,9 @@ func TestBasicDeclAndPrint(t *testing.T) {
 }
 
 func TestUnusedVarEmitsBlankRead(t *testing.T) {
-	out := gen(t, "val unused: int = 5\nval used: int = 1\nprint(used)\n")
+	// val with literal initializer is now at package level (no blank read there)
+	// mut in main still gets blank read
+	out := gen(t, "mut unused: int = 5\nval used: int = 1\nprint(used)\n")
 	containsSub(t, out, "var unused int = 5")
 	containsSub(t, out, "_ = unused")
 	if strings.Contains(out, "_ = used") {

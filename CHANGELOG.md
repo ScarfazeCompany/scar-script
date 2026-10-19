@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-10-19
+
+### Fixed
+- **Global variable access in functions**: `const` and `val` with literal initializers (int, dec, str, bool) are now accessible inside function scopes via parent-scope fallback chain. Previously all top-level variables were invisible to functions.
+- **Mutable variable isolation**: `mut` variables and `val` with non-literal initializers correctly remain inaccessible in functions (emit compile-time error).
+- **Documentation**: Removed `func` from reserved/prohibited keywords tables — now properly documented as a valid core function declaration keyword.
+- **Codegen**: Package-level emission of `const` and literal-initialized `val` ensures global constants/immutable vars are visible to generated Go functions.
+
+### Technical Details
+- Checker: Added `isLiteral` tracking in `varInfo`; scope lookup allows parent-scope access only for `const` or literal-initialized `val` (not `mut`).
+- Codegen: `isPkgLevel()` now returns true for `const` and `val` with literal initializers (`IntLit`, `FloatLit`, `BoolLit`, `StrLit`).
+- All existing tests pass; new behavior verified with integration tests.
+
+---
+
 ## [1.0.0] - 2026-10-14
 
 ### Added

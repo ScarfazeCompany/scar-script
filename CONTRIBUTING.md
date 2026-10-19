@@ -126,3 +126,4 @@ Be respectful, inclusive, and constructive. See [CODE_OF_CONDUCT.md](CODE_OF_CON
 ## Questions?
 
 Open a [Discussion](https://github.com/ScarfazeCompany/scar-script/discussions) or ping @zawiyar on GitHub.
+

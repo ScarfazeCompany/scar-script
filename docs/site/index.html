@@ -45,7 +45,7 @@
             <li><a href="https://github.com/ScarfazeCompany/scar-script" target="_blank" rel="noopener">GitHub</a></li>
             <li><a href="docs/getting-started.html" class="btn-sm">Get Started</a></li>
         </ul>
-        <button class="burger" aria-label="Menu"
+        <button class="burger" ari×label="Menu"
             onclick="document.querySelector('.topnav-links').style.display='flex';this.style.display='none'">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -86,7 +86,7 @@
         </div>
     </header>
 
-    <div class="meta-strip">
+    <div class="met×strip">
         <span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="16 18 22 12 16 6" />
@@ -181,66 +181,66 @@
     <hr class="half">
 
     <section id="performance">
-        <h2 class="sec-title">Performance That Speaks</h2>
-        <p class="sec-sub">ScarScript transpiles to Go and compiles to native binaries â€” delivering raw metal speed with zero overhead.</p>
+    <h2 class="sec-title">Performance That Speaks</h2>
+    <p class="sec-sub">ScarScript transpiles to Go and compiles to native binaries — delivering raw metal speed with zero overhead.</p>
 
-        <div class="card" style="max-width: 900px; margin: 0 auto; background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.05)); border-color: rgba(56,189,248,0.3);">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
-                <div>
-                    <h3 style="color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <svg class="ic-lg" style="color: var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M17 20V4"/><polyline points="17 4 11 4 11 10 5 10"/></svg>
-                        Benchmark: 10 Million Loop Iterations
-                    </h3>
-                    <p style="color: var(--muted); margin-bottom: 1.5rem;">Simple accumulation loop: <code style="background: var(--bg3); padding: 0.2rem 0.5rem; border-radius: 4px;">for i in 1..10_000_000 { sum += i }</code></p>
+    <div class="card" style="max-width: 900px; margin: 0 auto; background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.05)); border-color: rgba(56,189,248,0.3);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start;">
+            <div>
+                <h3 style="color: var(--accent); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <svg class="ic-lg" style="color: var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M17 20V4"/><polyline points="17 4 11 4 11 10 5 10"/></svg>
+                    Benchmark: 10 Million Loop Iterations
+                </h3>
+                <p style="color: var(--muted); margin-bottom: 1.5rem;">Simple accumulation loop: <code style="background: var(--bg3); padding: 0.2rem 0.5rem; border-radius: 4px;">for i in 1..10_000_000 { sum += i }</code></p>
 
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid var(--accent);">
-                                    <th style="text-align: left; padding: 0.75rem; color: var(--accent);">Language</th>
-                                    <th style="text-align: right; padding: 0.75rem; color: var(--accent);">Time</th>
-                                    <th style="text-align: right; padding: 0.75rem; color: var(--accent);">vs ScarScript</th>
-                                    <th style="text-align: left; padding: 0.75rem; color: var(--accent);">Runtime</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="background: rgba(56,189,248,0.1); border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 0.75rem; font-weight: 700; color: var(--green);"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M17 20V4"/><polyline points="17 4 11 4 11 10 5 10"/></svg> ScarScript</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-family: monospace; font-weight: 600; color: var(--green);">0.165 s</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--green);">1.00Ã— (baseline)</td>
-                                    <td style="padding: 0.75rem; color: var(--muted);">Native binary</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--accent2);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Go (reference)</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~0.155 s</td>
-                                    <td style="padding: 0.75rem; text-align: right; color: var(--muted);">1.06Ã— faster</td>
-                                    <td style="padding: 0.75rem; color: var(--muted);">Native binary</td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--green);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Node.js (v20)</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~0.95 s</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--orange);">5.8Ã— slower</td>
-                                    <td style="padding: 0.75rem; color: var(--muted);">V8 JIT</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--yellow);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Python (3.11)</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~3.8 s</td>
-                                    <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--red);">23Ã— slower</td>
-                                    <td style="padding: 0.75rem; color: var(--muted);">CPython interpreter</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg2); border-radius: 8px; border-left: 3px solid var(--accent);">
-                        <strong style="color: var(--accent);">Key Takeaway:</strong> ScarScript adds <strong>< 7% overhead</strong> vs hand-written Go, while being <strong>6â€“23Ã— faster</strong> than Node.js/Python. No warmup, no JIT compilation â€” just instant native speed from the first run.
-                    </div>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--accent);">
+                                <th style="text-align: left; padding: 0.75rem; color: var(--accent);">Language</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent);">Time</th>
+                                <th style="text-align: right; padding: 0.75rem; color: var(--accent);">vs ScarScript</th>
+                                <th style="text-align: left; padding: 0.75rem; color: var(--accent);">Runtime</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="background: rgba(56,189,248,0.1); border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.75rem; font-weight: 700; color: var(--green);"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M17 20V4"/><polyline points="17 4 11 4 11 10 5 10"/></svg> ScarScript</td>
+                                <td style="padding: 0.75rem; text-align: right; font-family: monospace; font-weight: 600; color: var(--green);">0.165 s</td>
+                                <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--green);">1.00× (baseline)</td>
+                                <td style="padding: 0.75rem; color: var(--muted);">Native binary</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--accent2);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Go (reference)</td>
+                                <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~0.155 s</td>
+                                <td style="padding: 0.75rem; text-align: right; color: var(--muted);">1.06× faster</td>
+                                <td style="padding: 0.75rem; color: var(--muted);">Native binary</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--green);" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> Node.js (v20)</td>
+                                <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~0.95 s</td>
+                                <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--orange);">5.8× slower</td>
+                                <td style="padding: 0.75rem; color: var(--muted);">V8 JIT</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; font-weight: 600;"><svg class="ic" style="vertical-align: -2px; margin-right: 0.4rem; color: var(--yellow);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Python (3.11)</td>
+                                <td style="padding: 0.75rem; text-align: right; font-family: monospace;">~3.8 s</td>
+                                <td style="padding: 0.75rem; text-align: right; font-weight: 600; color: var(--red);">23× slower</td>
+                                <td style="padding: 0.75rem; color: var(--muted);">CPython interpreter</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div>
-                    <h4 style="color: var(--muted); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Run It Yourself</h4>
-                    <pre style="background: #0d1117; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; overflow-x: auto;"><code style="color: var(--text); font-size: 0.85rem; line-height: 1.6;"><span class="cm"># Create benchmark file</span>
-cat > bench.scar << 'EOF'
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg2); border-radius: 8px; border-left: 3px solid var(--accent);">
+                    <strong style="color: var(--accent);">Key Takeaway:</strong> ScarScript adds <strong>&lt; 7% overhead</strong> vs hand-written Go, while being <strong>6–23× faster</strong> than Node.js/Python. No warmup, no JIT compilation — just instant native speed from the first run.
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color: var(--muted); margin-bottom: 1rem; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Run It Yourself</h4>
+                <pre style="background: #0d1117; border: 1px solid var(--border); border-radius: 10px; padding: 1.2rem; overflow-x: auto;"><code style="color: var(--text); font-size: 0.85rem; line-height: 1.6;"><span class="cm"># Create benchmark file</span>
+cat &gt; bench.scar &lt;&lt; 'EOF'
 <span class="kw">mut</span> sum = <span class="num">0</span>
 <span class="kw">for</span> i <span class="kw">in</span> <span class="num">1</span>..<span class="num">10_000_000</span> {
     sum = sum + i
@@ -248,14 +248,13 @@ cat > bench.scar << 'EOF'
 <span class="fn">print</span>(<span class="str">"Sum: {sum}"</span>)
 EOF
 
-<span class="cm"># Build & run</span>
+<span class="cm"># Build &amp; run</span>
 scar build bench.scar -o bench
 time ./bench</code></pre>
-                </div>
             </div>
         </div>
-    </section>
-
+    </div>
+</section>
     <hr class="half">
 
     <section id="install">
@@ -446,5 +445,7 @@ file.<span class="fn">write</span>(<span class="str">"log.txt"</span>, <span cla
 </body>
 
 </html>
+
+
 
 

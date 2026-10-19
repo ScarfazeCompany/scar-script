@@ -16,27 +16,32 @@ import (
 
 // Generator emits a self-contained Go program from a checked ScarScript AST.
 type Generator struct {
-	buf         *bytes.Buffer
-	ind         int
-	file        string
-	typ         map[ast.Expr]types.Type
-	unused      map[ast.Node][]string
-	needStrings bool
-	needMath    bool
-	needRand    bool
-	needTime    bool
+	buf          *bytes.Buffer
+	ind          int
+	file         string
+	typ          map[ast.Expr]types.Type
+	unused       map[ast.Node][]string
+	needStrings  bool
+	needMath     bool
+	needRand     bool
+	needTime     bool
+	pkgLevelVars map[string]*ast.DeclStmt
+	pass1        bool // true during first pass (flag collection)
 }
 
 // Generate translates a checked program into gofmt-formatted Go source.
 func Generate(prog *ast.Program, res *checker.Result) (string, *diag.Error) {
 	g := &Generator{
-		buf:    new(bytes.Buffer),
-		file:   prog.File,
-		typ:    res.Types,
-		unused: res.Unused,
+		buf:          new(bytes.Buffer),
+		file:         prog.File,
+		typ:          res.Types,
+		unused:       res.Unused,
+		pkgLevelVars: make(map[string]*ast.DeclStmt),
 	}
-	g.generate(prog) // pass 1: collect flags (e.g. needStrings)
+	g.pass1 = true
+	g.generate(prog) // pass 1: collect flags (e.g. needStrings) and pkg-level vars
 	g.buf.Reset()
+	g.pass1 = false
 	g.generate(prog) // pass 2: emit with correct imports
 	src := g.buf.Bytes()
 	out, err := format.Source(src)
@@ -94,6 +99,15 @@ func (g *Generator) generate(prog *ast.Program) {
 	g.raw(prelude)
 	g.emitOptionalHelpers()
 
+	// Emit package-level constants and immutable (val) variables
+	// so they are accessible from top-level functions.
+	if len(g.pkgLevelVars) > 0 {
+		for _, d := range g.pkgLevelVars {
+			g.decl(d)
+		}
+		g.raw("\n")
+	}
+
 	// Top-level functions are emitted before main.
 	for _, s := range prog.Stmts {
 		if fd, ok := s.(*ast.FuncDecl); ok {
@@ -106,6 +120,13 @@ func (g *Generator) generate(prog *ast.Program) {
 	for _, s := range prog.Stmts {
 		if _, ok := s.(*ast.FuncDecl); ok {
 			continue
+		}
+		// Skip package-level vars in main (already emitted at package level)
+		// Only skip in pass 2; in pass 1 we need to type-check initializers for flag collection.
+		if d, ok := s.(*ast.DeclStmt); ok {
+			if g.isPkgLevel(d) && !g.pass1 {
+				continue
+			}
 		}
 		g.stmt(s)
 	}
@@ -294,6 +315,13 @@ func _scar_rand(lo int, hi int) int {
 func (g *Generator) stmt(s ast.Stmt) {
 	switch st := s.(type) {
 	case *ast.DeclStmt:
+		// Collect package-level constants and immutable vars in pass 1
+		if g.isPkgLevel(st) {
+			if g.pkgLevelVars == nil {
+				g.pkgLevelVars = make(map[string]*ast.DeclStmt)
+			}
+			g.pkgLevelVars[st.Name] = st
+		}
 		g.decl(st)
 	case *ast.MultiDeclStmt:
 		g.multiDecl(st)
@@ -318,6 +346,26 @@ func (g *Generator) stmt(s ast.Stmt) {
 	}
 }
 
+func (g *Generator) isPkgLevel(d *ast.DeclStmt) bool {
+	// const at package level (must be literals, no side effects)
+	// val with literal initializers (no side effects) also at package level
+	if d.Kind == ast.Const {
+		return true
+	}
+	if d.Kind == ast.Val && g.isLiteralExpr(d.Value) {
+		return true
+	}
+	return false
+}
+
+func (g *Generator) isLiteralExpr(e ast.Expr) bool {
+	switch e.(type) {
+	case *ast.IntLit, *ast.FloatLit, *ast.BoolLit, *ast.StrLit:
+		return true
+	}
+	return false
+}
+
 func (g *Generator) isUnused(n ast.Node, name string) bool {
 	for _, u := range g.unused[n] {
 		if u == name {
@@ -337,7 +385,7 @@ func (g *Generator) decl(d *ast.DeclStmt) {
 	} else {
 		g.line("%s %s = %s", kw, d.Name, g.expr(d.Value))
 	}
-	if d.Kind != ast.Const && g.isUnused(d, d.Name) {
+	if d.Kind != ast.Const && g.isUnused(d, d.Name) && !g.isPkgLevel(d) {
 		g.line("_ = %s", d.Name)
 	}
 }

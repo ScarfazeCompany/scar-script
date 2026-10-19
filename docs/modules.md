@@ -220,3 +220,4 @@ demo.scar:3:12: error: math has no function "sin" (available: sqrt, pow, abs, ro
 3. **File paths:** Use forward slashes (`/`) — works cross-platform in Go.
 
 4. **Large files:** `file.read` loads entire file into memory — stream via FFI for huge files.
+

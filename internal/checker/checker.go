@@ -10,13 +10,14 @@ import (
 )
 
 type varInfo struct {
-	typ     types.Type
-	mut     bool
-	isConst bool
-	used    bool
-	name    string
-	node    ast.Node // declaring statement (DeclStmt or ForStmt)
-	pos     diag.Position
+	typ       types.Type
+	mut       bool
+	isConst   bool
+	isLiteral bool // true if initializer is a literal (no side effects)
+	used      bool
+	name      string
+	node      ast.Node // declaring statement (DeclStmt or ForStmt)
+	pos       diag.Position
 }
 
 type scope struct {
@@ -169,8 +170,24 @@ func (c *Checker) declare(name string, v *varInfo, pos diag.Position, node ast.N
 	v.name = name
 	v.node = node
 	v.pos = pos
+	v.isLiteral = c.isLiteralExpr(node)
 	c.scope.vars[name] = v
 	c.allVars = append(c.allVars, v)
+}
+
+func (c *Checker) isLiteralExpr(node ast.Node) bool {
+	if d, ok := node.(*ast.DeclStmt); ok {
+		return c.isLiteralValue(d.Value)
+	}
+	return false
+}
+
+func (c *Checker) isLiteralValue(e ast.Expr) bool {
+	switch e.(type) {
+	case *ast.IntLit, *ast.FloatLit, *ast.BoolLit, *ast.StrLit:
+		return true
+	}
+	return false
 }
 
 // registerFunc resolves and records a top-level function's signature.
@@ -293,9 +310,10 @@ func (c *Checker) checkDecl(d *ast.DeclStmt) {
 		c.fail(d.Value.Pos(), "cannot use value of type %q where type %q is expected", vt, ty)
 	}
 	c.declare(d.Name, &varInfo{
-		typ:     ty,
-		mut:     d.Kind == ast.Mut,
-		isConst: d.Kind == ast.Const,
+		typ:       ty,
+		mut:       d.Kind == ast.Mut,
+		isConst:   d.Kind == ast.Const,
+		isLiteral: c.isLiteralValue(d.Value),
 	}, d.NamePos, d)
 }
 
@@ -334,7 +352,7 @@ func (c *Checker) checkMultiDecl(md *ast.MultiDeclStmt) {
 		c.fail(md.Value.Pos(), "expected %d return values, got %d", len(tup.Elems), len(md.Names))
 	}
 	for i, name := range md.Names {
-		c.declare(name, &varInfo{typ: tup.Elems[i], mut: md.Kind == ast.Mut},
+		c.declare(name, &varInfo{typ: tup.Elems[i], mut: md.Kind == ast.Mut, isLiteral: false},
 			md.NamePoss[i], md)
 	}
 }
@@ -478,7 +496,9 @@ func (c *Checker) checkFuncDecl(fd *ast.FuncDecl) {
 	oldResult := c.curResult
 	c.curResult = sig.Result
 	oldScope := c.scope
-	c.pushIsolated()
+	// Use a scope with global parent so constants and immutable vars are visible
+	// but still isolate mutable variables (they'll be declared in function scope if shadowed)
+	c.scope = &scope{parent: oldScope, vars: map[string]*varInfo{}}
 	c.declareParams(fd.Params)
 	c.checkFuncBody(fd.Body, fd.NamePos, sig.Result)
 	c.scope = oldScope
@@ -515,7 +535,7 @@ func (c *Checker) declareParams(params []ast.Param) {
 			c.fail(prm.NamePos, "duplicate parameter %q", prm.Name)
 		}
 		seen[prm.Name] = true
-		c.declare(prm.Name, &varInfo{typ: c.resolveType(prm.Type), mut: false}, prm.NamePos, nil)
+		c.declare(prm.Name, &varInfo{typ: c.resolveType(prm.Type), mut: false, isLiteral: false}, prm.NamePos, nil)
 	}
 }
 
@@ -747,6 +767,16 @@ func (c *Checker) checkIdent(id *ast.Ident) types.Type {
 			c.fail(id.P, "%q is a function — call it like %s(...)", id.Name, id.Name)
 		}
 		c.fail(id.P, "undefined variable %q", id.Name)
+	}
+	// In function scope: only allow access to parent scope vars if they are const or val with literal initializers
+	if c.inFunc > 0 {
+		// Check if the variable is in the current (function) scope
+		if _, inCurrentScope := c.scope.vars[id.Name]; !inCurrentScope {
+			// Variable is from parent scope - only allow const or literal-initialized vals (not mut)
+			if !info.isConst && (!info.isLiteral || info.mut) {
+				c.fail(id.P, "undefined variable %q (only const and immutable val with literal initializers accessible in functions)", id.Name)
+			}
+		}
 	}
 	info.used = true
 	return info.typ

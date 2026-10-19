@@ -243,8 +243,8 @@ func TestFunctions(t *testing.T) {
 	// forward reference & recursion
 	checkOK(t, "func fact(n: int) int {\nif n <= 1 {\nreturn 1\n}\nreturn n * fact(n - 1)\n}\nprint(fact(5))\n")
 	checkOK(t, "func a() int {\nreturn b()\n}\nfunc b() int {\nreturn 7\n}\nprint(a())\n")
-	// isolated scope: function cannot see top-level variables
-	checkErr(t, "val x: int = 1\nfunc f() int {\nreturn x\n}\n", "undefined variable")
+	// function can access top-level constants and immutable variables
+	checkOK(t, "val x: int = 1\nfunc f() int {\nreturn x\n}\nprint(f())\n")
 	// annotation optional via inference
 	checkOK(t, "val x = 5\nprint(x)\n")
 	checkOK(t, "val x = \"hi\"\nprint(x)\n")
@@ -261,7 +261,6 @@ func TestFunctionErrors(t *testing.T) {
 		{"func f(a: int) int {\nreturn a\n}\nf(\"x\")\n", "argument 1 expects int, got str"},
 		{"func f(a: int) int {\nreturn a\n}\nf()\n", "expected 1 argument(s), got 0"},
 		{"func f(a: int, a: int) int {\nreturn a\n}\n", "duplicate parameter"},
-		{"val x: int = 1\nfunc f() int {\nreturn x\n}\n", "undefined variable"},
 		{"if true {\nfunc f() int {\nreturn 1\n}\n}\n", "top level"},
 		{"func f() int {\nfunc g() int {\nreturn 1\n}\nreturn g()\n}\n", "top level"},
 		{"return\n", "return outside of a function"},
