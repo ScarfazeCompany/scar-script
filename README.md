@@ -20,27 +20,13 @@
 ## 📢 Language Development Announcement
 
 > [!IMPORTANT]
-> **This language is under active development.**
+Language Development Status
 
-As this is a new programming language developed by **Team Scarfaze**, some bugs and unexpected issues have been identified during testing and usage.
+ScarScript is under active development by Team Scarfaze. Thanks to valuable community feedback and testing, we have successfully addressed and fixed the initial scope and build-cache bugs in v1.0.1.
 
-We sincerely thank everyone who has tested the language, reported bugs, and provided valuable feedback. Your contributions help us identify issues and improve the language.
+As we continue expanding our compiler features and standard library, you may encounter new experimental features or updates. We deeply appreciate your contributions and bug reports as we build Pakistan's first high-performance compiled language!
 
-### 🛠️ What We're Doing
-
-- Fixing the reported bugs and unexpected issues.
-- Improving language stability and reliability.
-- Working on improvements for the upcoming release.
-
-### 🚀 Upcoming Release
-
-The **Scarfaze team** is actively working on fixing these issues. A new version with bug fixes and improvements will be released soon.
-
-We appreciate your patience, support, and contribution as we continue to develop and improve this language.
-
-**Thank you for being part of this journey!**
-
-— **Team Scarfaze**
+— Team Scarfaze
 
 ---
 
