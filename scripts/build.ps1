@@ -3,11 +3,11 @@
     Build ScarScript compiler for Windows, Linux, and macOS
 .DESCRIPTION
     Cross-compiles the ScarScript CLI for all supported platforms.
-    Outputs binaries to ./dist/
+    Outputs binaries to ./dist/ and project root
 #>
 
 param(
-    [string]$Version = "1.0.0",
+    [string]$Version = "1.0.1",
     [switch]$Clean
 )
 
@@ -21,6 +21,9 @@ if ($Clean -and (Test-Path $distDir)) {
     Remove-Item $distDir -Recurse -Force
 }
 New-Item -ItemType Directory -Path $distDir -Force | Out-Null
+
+# Also output to project root for convenience
+$rootDistDir = $repoRoot
 
 $ldflags = "-s -w -X main.version=$Version"
 
@@ -36,6 +39,7 @@ Write-Host "Building ScarScript v$Version..." -ForegroundColor Cyan
 foreach ($t in $targets) {
     $outName = "$($t.Name)$($t.Ext)"
     $outPath = Join-Path $distDir $outName
+    $rootOutPath = Join-Path $rootDistDir $outName
     
     Write-Host "  Building $outName..." -NoNewline
     
@@ -49,6 +53,9 @@ foreach ($t in $targets) {
         Write-Error $result
         exit 1
     }
+    
+    # Copy to project root
+    Copy-Item $outPath $rootOutPath -Force
     
     Write-Host " OK" -ForegroundColor Green
 }
@@ -65,5 +72,5 @@ foreach ($f in $files) {
 [IO.File]::WriteAllLines($checksumPath, $hashes)
 Write-Host "  checksums.txt created" -ForegroundColor Green
 
-Write-Host "`nDone! Binaries in $distDir" -ForegroundColor Cyan
+Write-Host "`nDone! Binaries in $distDir and project root" -ForegroundColor Cyan
 Get-ChildItem $distDir | Format-Table Name, Length

@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-VERSION="${1:-1.0.0}"
+VERSION="${1:-1.0.1}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$REPO_ROOT/dist"
 CMD_PATH="$REPO_ROOT/cmd/scar"
@@ -12,6 +12,9 @@ CMD_PATH="$REPO_ROOT/cmd/scar"
 # Clean
 rm -rf "$DIST_DIR"
 mkdir -p "$DIST_DIR"
+
+# Also output to project root
+ROOT_DIST_DIR="$REPO_ROOT"
 
 LDFLAGS="-s -w -X main.version=$VERSION"
 
@@ -28,6 +31,7 @@ for target in "${targets[@]}"; do
     read -r GOOS GOARCH EXT NAME <<< "$target"
     OUT_NAME="${NAME}${EXT}"
     OUT_PATH="$DIST_DIR/$OUT_NAME"
+    ROOT_OUT_PATH="$ROOT_DIST_DIR/$OUT_NAME"
     
     echo -n "  Building $OUT_NAME... "
     
@@ -38,6 +42,10 @@ for target in "${targets[@]}"; do
         echo "FAILED"
         exit 1
     fi
+    
+    # Copy to project root
+    cp "$OUT_PATH" "$ROOT_OUT_PATH"
+    
     echo "OK"
 done
 
@@ -49,5 +57,5 @@ sha256sum scar-* > checksums.txt
 echo "  checksums.txt created"
 
 echo ""
-echo "Done! Binaries in $DIST_DIR"
+echo "Done! Binaries in $DIST_DIR and project root"
 ls -lh "$DIST_DIR"
