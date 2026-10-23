@@ -15,9 +15,6 @@
   <a href="https://github.com/ScarfazeCompany/scar-script/releases">
     <img src="https://img.shields.io/github/v/release/ScarfazeCompany/scar-script" alt="Release"/>
   </a>
-  <a href="https://goreportcard.com/report/github.com/ScarfazeCompany/scar-script">
-    <img src="https://goreportcard.com/badge/github.com/ScarfazeCompany/scar-script" alt="Go Report Card"/>
-  </a>
   <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE">
     <img src="https://img.shields.io/github/license/ScarfazeCompany/scar-script" alt="License"/>
   </a>
