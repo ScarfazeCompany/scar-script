@@ -9,10 +9,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/ScarfazeCompany/scar-script/actions"><img src="https://img.shields.io/github/actions/workflow/status/scarfaze/scar-script/ci.yml?branch=main" alt="CI"/></a>
-  <a href="https://github.com/ScarfazeCompany/scar-script/releases"><img src="https://img.shields.io/github/v/release/scarfaze/scar-script" alt="Release"/></a>
-  <a href="https://goreportcard.com/report/github.com/ScarfazeCompany/scar-script"><img src="https://goreportcard.com/badge/github.com/ScarfazeCompany/scar-script" alt="Go Report Card"/></a>
-  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE"><img src="https://img.shields.io/github/license/scarfaze/scar-script" alt="License"/></a>
+  <a href="https://github.com/ScarfazeCompany/scar-script/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/ScarfazeCompany/scar-script/ci.yml?branch=main" alt="CI"/>
+  </a>
+  <a href="https://github.com/ScarfazeCompany/scar-script/releases">
+    <img src="https://img.shields.io/github/v/release/ScarfazeCompany/scar-script" alt="Release"/>
+  </a>
+  <a href="https://goreportcard.com/report/github.com/ScarfazeCompany/scar-script">
+    <img src="https://goreportcard.com/badge/github.com/ScarfazeCompany/scar-script" alt="Go Report Card"/>
+  </a>
+  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE">
+    <img src="https://img.shields.io/github/license/ScarfazeCompany/scar-script" alt="License"/>
+  </a>
 </p>
 
 ---
