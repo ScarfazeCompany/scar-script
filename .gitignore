@@ -11,6 +11,7 @@ demo_new.scar
 
 # Build output
 dist/
+public/
 *.gen.go
 
 # IDE

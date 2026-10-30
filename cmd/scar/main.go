@@ -5,9 +5,10 @@ import (
 	"os"
 
 	"github.com/ScarfazeCompany/scar-script/internal/driver"
+	"github.com/ScarfazeCompany/scar-script/internal/lsp"
 )
 
-const version = "1.0.1"
+const version = "1.0.2"
 
 const usage = `ScarScript compiler v` + version + `
 
@@ -53,6 +54,14 @@ func main() {
 
 	case "version", "--version", "-v":
 		fmt.Println("scar version " + version)
+
+	case "--lsp", "lsp":
+		err := lsp.StartServer()
+		if err != nil {
+			fmt.Printf("LSP Server Error: %v\n", err)
+			os.Exit(1)
+		}
+		return
 
 	case "help", "--help", "-h":
 		fmt.Print(usage)
