@@ -15,8 +15,8 @@
   <a href="https://github.com/ScarfazeCompany/scar-script/releases">
     <img src="https://img.shields.io/github/v/release/ScarfazeCompany/scar-script" alt="Release"/>
   </a>
-  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE">
-    <img src="https://img.shields.io/github/license/ScarfazeCompany/scar-script" alt="License"/>
+  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/README.md#-license">
+    <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg" alt="MIT or Apache-2.0 License"/>
   </a>
 </p>
 
@@ -273,7 +273,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### 📄 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+ScarScript is dual-licensed. You may use it under the terms of either:
+
+- [MIT License](LICENSE)
+- [Apache License 2.0](LICENSE-APACHE)
+
+Choose the license that best fits your use case.
 
 ---
 
@@ -281,4 +286,3 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 **Zawiyar Awan** — Founder, **Scarfaze**  
 Pakistan's First High-Performance Compiled Language with Express-Like Syntax
-
