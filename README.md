@@ -25,13 +25,13 @@
 ## 📢 Language Development Announcement
 
 > [!IMPORTANT]
-Language Development Status
-
-ScarScript is under active development by Team Scarfaze. Version 1.0.2 adds an initial LSP server entry point for VS Code integration, following the scope and build-cache fixes in v1.0.1.
-
-As we continue expanding our compiler features and standard library, you may encounter new experimental features or updates. We deeply appreciate your contributions and bug reports as we build Pakistan's first high-performance compiled language!
-
-— Team Scarfaze
+> **Language Development Status**
+> 
+> ScarScript is under active development by Team Scarfaze. Following the release of **v1.0.2** (which introduced initial LSP server support for VS Code), we are currently in the **rigorous testing phase** for the upcoming **v1.0.3** release. 
+> 
+> Once testing and performance benchmarking are finalized, v1.0.3 will be officially deployed. We deeply appreciate your bug reports, feedback, and contributions as we continue building Pakistan's first high-performance compiled language!
+> 
+> — Team Scarfaze
 
 ---
 
