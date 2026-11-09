@@ -22,16 +22,28 @@
 
 ---
 
-## 📢 Language Development Announcement
+<p align="center">
+  <img src="https://scarscript.scarfaze.com/api/media/mw800shr-595fe8e70c.png" alt="ScarScript v1.0.3 Development Banner" width="100%"/>
+</p>
+
+## 📢 Language Development Status
 
 > [!IMPORTANT]
-> **Language Development Status**
+> **ScarScript v1.0.3 (Under Testing & Benchmarking)**
 > 
-> ScarScript is under active development by Team Scarfaze. Following the release of **v1.0.2** (which introduced initial LSP server support for VS Code), we are currently in the **rigorous testing phase** for the upcoming **v1.0.3** release. 
+> ScarScript is under active development by Team Scarfaze. Following the release of **v1.0.2** (which introduced initial LSP server support for VS Code), our engineering team is currently running rigorous benchmarking and testing for the upcoming **v1.0.3** release. 
 > 
-> Once testing and performance benchmarking are finalized, v1.0.3 will be officially deployed. We deeply appreciate your bug reports, feedback, and contributions as we continue building Pakistan's first high-performance compiled language!
+> Once testing and performance stabilization are finalized, v1.0.3 will be officially deployed. We deeply appreciate your bug reports, feedback, and contributions as we continue building Pakistan's first high-performance compiled language!
 > 
 > — Team Scarfaze
+
+---
+
+## ⚡ Try ScarScript Online (WebAssembly Playground)
+
+Want to test ScarScript instantly without installing anything locally? You can now test the **beta version** directly inside your browser powered by WebAssembly (Wasm) and built-in Emmet system support:
+
+👉 **[Launch ScarScript Interactive Playground](https://scarscript.scarfaze.com/playground)**
 
 ---
 
