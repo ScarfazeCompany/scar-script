@@ -29,15 +29,15 @@
 ---
 
 <p align="center">
-  <img src="https://scarscript.scarfaze.com/api/media/mw800shr-595fe8e70c.png" alt="ScarScript v1.0.3 Development Banner" width="100%"/>
+  <img src="https://scarscript.scarfaze.com/api/media/mw800shr-595fe8e70c.png" alt="ScarScript v1.0.3 Release Banner" width="100%"/>
 </p>
 
 ## 📢 Language Development Status
 
 > [!IMPORTANT]
-> **ScarScript v1.0.3 (Under Testing & Benchmarking)**
+> **ScarScript v1.0.3 — Dropping Monday, November 23, 2026**
 > 
-> ScarScript is under active development by **Team Scarfaze**. Following the release of **v1.0.2** (which introduced initial Language Server Protocol support for VS Code), our engineering team is running rigorous benchmarking and stabilization for **v1.0.3**.
+> ScarScript is under active development by **Team Scarfaze**. Following the release of **v1.0.2** (which introduced initial Language Server Protocol support for VS Code), we are wrapping up final stability checks, parser edge-case fixes, and performance benchmarks for **v1.0.3**, scheduled for release this **Monday, November 23, 2026**.
 > 
 > Check out the [Version Notes & Migration Guide](https://scarscript.scarfaze.com/docs/reference/migration) and [Engineering Blog](https://scarscript.scarfaze.com/blog) for the latest updates. We appreciate your bug reports, feedback, and contributions as we continue building Pakistan's first high-performance compiled language!
 
