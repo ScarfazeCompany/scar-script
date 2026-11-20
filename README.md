@@ -33,6 +33,7 @@
 </p>
 
 ## 📢 Language Development Status
+📊 **[View Official v1.0.2 Performance Benchmarks](./BENCHMARKS.md)**
 
 > [!IMPORTANT]
 > **ScarScript v1.0.3 — Dropping Monday, November 23, 2026**
