@@ -1,4 +1,4 @@
-﻿package token
+package token
 
 // Type identifies the kind of a lexical token.
 type Type string
@@ -137,4 +137,3 @@ func (t Token) String() string {
 	}
 	return string(t.Type)
 }
-
