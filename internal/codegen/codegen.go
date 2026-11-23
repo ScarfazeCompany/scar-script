@@ -27,6 +27,8 @@ type Generator struct {
 	needTime     bool
 	pkgLevelVars map[string]*ast.DeclStmt
 	pass1        bool // true during first pass (flag collection)
+	// fnResultGo is the generated Go result type of the innermost emitted function.
+	fnResultGo string
 }
 
 // Generate translates a checked program into gofmt-formatted Go source.
@@ -106,6 +108,17 @@ func (g *Generator) generate(prog *ast.Program) {
 			g.decl(d)
 		}
 		g.raw("\n")
+	}
+
+	// Emit struct declarations at package level.
+	for _, s := range prog.Stmts {
+		if ed, ok := s.(*ast.ExportDecl); ok {
+			if sd, ok := ed.Decl.(*ast.StructDecl); ok {
+				g.structDecl(sd)
+			}
+		} else if sd, ok := s.(*ast.StructDecl); ok {
+			g.structDecl(sd)
+		}
 	}
 
 	// Top-level functions are emitted before main.
@@ -287,6 +300,79 @@ func _scar_file_delete(path string) {
 		panic(_scarfmt.Sprintf("scar: file.delete: %v", err))
 	}
 }
+
+// ScarOption[T] is the Go representation of ScarScript's Option<T>.
+type ScarOption[T any] struct {
+	val  T
+	isOk bool
+}
+
+func _scar_some[T any](v T) ScarOption[T] {
+	return ScarOption[T]{val: v, isOk: true}
+}
+
+func _scar_none[T any]() ScarOption[T] {
+	return ScarOption[T]{}
+}
+
+func (o ScarOption[T]) IsSome() bool {
+	return o.isOk
+}
+
+func (o ScarOption[T]) IsNone() bool {
+	return !o.isOk
+}
+
+func (o ScarOption[T]) Unwrap() T {
+	if !o.isOk {
+		panic("scar: option.unwrap on None")
+	}
+	return o.val
+}
+
+func (o ScarOption[T]) UnwrapOr(def T) T {
+	if !o.isOk {
+		return def
+	}
+	return o.val
+}
+
+// ScarResult[T, E] is the Go representation of ScarScript's Result<T, E>.
+type ScarResult[T any, E any] struct {
+	ok   T
+	err  E
+	isOk bool
+}
+
+func _scar_ok[T any, E any](v T) ScarResult[T, E] {
+	return ScarResult[T, E]{ok: v, isOk: true}
+}
+
+func _scar_err[T any, E any](e E) ScarResult[T, E] {
+	return ScarResult[T, E]{err: e, isOk: false}
+}
+
+func (r ScarResult[T, E]) IsOk() bool {
+	return r.isOk
+}
+
+func (r ScarResult[T, E]) IsErr() bool {
+	return !r.isOk
+}
+
+func (r ScarResult[T, E]) Unwrap() T {
+	if !r.isOk {
+		panic("scar: result.unwrap on Err")
+	}
+	return r.ok
+}
+
+func (r ScarResult[T, E]) UnwrapErr() E {
+	if r.isOk {
+		panic("scar: result.unwrapErr on Ok")
+	}
+	return r.err
+}
 `
 
 // scarTimeHelpers is emitted only when time.* is used (needs the time import).
@@ -343,6 +429,18 @@ func (g *Generator) stmt(s ast.Stmt) {
 		g.exprStmt(st)
 	case *ast.ReturnStmt:
 		g.returnStmt(st)
+	case *ast.BreakStmt:
+		g.line("break")
+	case *ast.ContinueStmt:
+		g.line("continue")
+	case *ast.AssignFieldStmt:
+		g.line("%s.%s = %s", g.expr(st.X), g.goFieldName(st.Field), g.expr(st.Value))
+	case *ast.StructDecl:
+		// Emitted at package level in generate()
+	case *ast.ExportDecl:
+		// Inner declaration handled separately
+	case *ast.ImportStmt:
+		// Handled by driver bundling
 	}
 }
 
@@ -407,13 +505,30 @@ func (g *Generator) returnStmt(r *ast.ReturnStmt) {
 	}
 	parts := make([]string, len(r.Values))
 	for i, v := range r.Values {
+		if id, ok := v.(*ast.Ident); ok && strings.ToLower(id.Name) == "none" {
+			// Bare `None` returns a typed zero Option of the enclosing result type.
+			parts[i] = g.scarNoneCall()
+			continue
+		}
 		parts[i] = g.expr(v)
 	}
 	g.line("return %s", strings.Join(parts, ", "))
 }
 
+// scarNoneCall returns the Go call for a bare `None` value, using the
+// enclosing function's result type when it is a generic Option.
+func (g *Generator) scarNoneCall() string {
+	t := strings.TrimSpace(g.fnResultGo)
+	if strings.HasPrefix(t, "ScarOption[") {
+		inner := strings.TrimSuffix(strings.TrimPrefix(t, "ScarOption["), "]")
+		return "_scar_none[" + inner + "]()"
+	}
+	return "_scar_none()"
+}
+
 // funcDecl emits a top-level Go function.
 func (g *Generator) funcDecl(fd *ast.FuncDecl) {
+	g.fnResultGo = strings.TrimSpace(g.resultType(fd.Result))
 	g.line("func %s(%s)%s {", fd.Name, g.paramList(fd.Params), g.resultType(fd.Result))
 	g.ind++
 	for _, s := range fd.Body.Stmts {
@@ -421,6 +536,55 @@ func (g *Generator) funcDecl(fd *ast.FuncDecl) {
 	}
 	g.ind--
 	g.line("}")
+}
+
+// structDecl emits a Go struct type declaration.
+func (g *Generator) structDecl(sd *ast.StructDecl) {
+	g.line("type %s struct {", g.goStructName(sd.Name))
+	g.ind++
+	for _, f := range sd.Fields {
+		g.line("%s %s", g.goFieldName(f.Name), g.goTypeExpr(f.Type))
+	}
+	g.ind--
+	g.line("}")
+}
+
+// goStructName capitalizes the first letter for exported Go type names.
+func (g *Generator) goStructName(name string) string {
+	if len(name) == 0 {
+		return name
+	}
+	return strings.ToUpper(name[:1]) + name[1:]
+}
+
+// scarGoType maps a ScarScript type to its Go type name (used for generic
+// type arguments like ScarOption[T] / ScarResult[T, E]).
+func (g *Generator) scarGoType(t types.Type) string {
+	switch tv := t.(type) {
+	case *types.Basic:
+		switch tv.K {
+		case types.Str:
+			return "string"
+		case types.Int:
+			return "int"
+		case types.Bool:
+			return "bool"
+		case types.Float:
+			return "float64"
+		}
+		return "any"
+	case *types.Struct:
+		return g.goStructName(tv.Name)
+	}
+	return "any"
+}
+
+// goFieldName capitalizes the first letter for exported Go field names.
+func (g *Generator) goFieldName(name string) string {
+	if len(name) == 0 {
+		return name
+	}
+	return strings.ToUpper(name[:1]) + name[1:]
 }
 
 func (g *Generator) paramList(params []ast.Param) string {
@@ -576,6 +740,9 @@ func (g *Generator) expr(e ast.Expr) string {
 		}
 		return "false"
 	case *ast.Ident:
+		if strings.ToLower(x.Name) == "none" {
+			return "_scar_none()"
+		}
 		return x.Name
 	case *ast.StrLit:
 		return g.strLit(x)
@@ -607,6 +774,16 @@ func (g *Generator) expr(e ast.Expr) string {
 		return g.capture(func() { g.funcLit(x) })
 	case *ast.RangeExpr:
 		return "0 /* internal: range outside for */"
+	case *ast.StructLit:
+		return g.structLit(x)
+	case *ast.OptionSome:
+		return g.optionSome(x)
+	case *ast.OptionNone:
+		return g.optionNone(x)
+	case *ast.ResultOk:
+		return g.resultOk(x)
+	case *ast.ResultErr:
+		return g.resultErr(x)
 	}
 	return "/* internal: unknown expr */"
 }
@@ -620,6 +797,7 @@ func (g *Generator) funcLit(f *ast.FuncLit) {
 	}
 	g.ind--
 	g.line("}")
+	g.fnResultGo = ""
 }
 
 func (g *Generator) strLit(s *ast.StrLit) string {
@@ -662,6 +840,30 @@ func (g *Generator) mapLit(m *ast.MapLit) string {
 		entries = append(entries, g.expr(en.Key)+": "+g.expr(en.Val))
 	}
 	return "map[" + g.goType(t.Key) + "]" + g.goType(t.Val) + "{" + strings.Join(entries, ", ") + "}"
+}
+
+func (g *Generator) structLit(sl *ast.StructLit) string {
+	var entries []string
+	for _, entry := range sl.Entries {
+		entries = append(entries, g.goFieldName(entry.Name)+": "+g.expr(entry.Value))
+	}
+	return g.goStructName(sl.TypeName) + "{" + strings.Join(entries, ", ") + "}"
+}
+
+func (g *Generator) optionSome(os *ast.OptionSome) string {
+	return "_scar_some(" + g.expr(os.Val) + ")"
+}
+
+func (g *Generator) optionNone(on *ast.OptionNone) string {
+	return "_scar_none()"
+}
+
+func (g *Generator) resultOk(ok *ast.ResultOk) string {
+	return "_scar_ok(" + g.expr(ok.Val) + ")"
+}
+
+func (g *Generator) resultErr(err *ast.ResultErr) string {
+	return "_scar_err(" + g.expr(err.Err) + ")"
 }
 
 func (g *Generator) ternary(t *ast.TernaryExpr) string {
@@ -741,6 +943,29 @@ func (g *Generator) call(c *ast.CallExpr) string {
 		if id.Name == "print" {
 			return "_scarfmt.Println(" + g.argList(c.Args) + ")"
 		}
+		// Generic constructors (Some/None/Ok/Err — case-insensitive)
+		lname := strings.ToLower(id.Name)
+		if lname == "some" {
+			ret := g.typ[c]
+			if opt, ok := ret.(*types.Option); ok {
+				return "_scar_some[" + g.scarGoType(opt.Elem) + "](" + g.argList(c.Args) + ")"
+			}
+			return "_scar_some(" + g.argList(c.Args) + ")"
+		}
+		if lname == "ok" {
+			ret := g.typ[c]
+			if res, ok := ret.(*types.Result); ok {
+				return "_scar_ok[" + g.scarGoType(res.Ok) + ", " + g.scarGoType(res.Err) + "](" + g.argList(c.Args) + ")"
+			}
+			return "_scar_ok(" + g.argList(c.Args) + ")"
+		}
+		if lname == "err" {
+			ret := g.typ[c]
+			if res, ok := ret.(*types.Result); ok {
+				return "_scar_err[" + g.scarGoType(res.Ok) + ", " + g.scarGoType(res.Err) + "](" + g.argList(c.Args) + ")"
+			}
+			return "_scar_err(" + g.argList(c.Args) + ")"
+		}
 		// user function or variable holding a function
 		return id.Name + "(" + g.argList(c.Args) + ")"
 	}
@@ -792,6 +1017,30 @@ func (g *Generator) call(c *ast.CallExpr) string {
 	case *types.Map:
 		if m.Name == "len" {
 			return "len(" + recv + ")"
+		}
+	case *types.Option:
+		switch m.Name {
+		case "isSome":
+			return recv + ".IsSome()"
+		case "isNone":
+			return recv + ".IsNone()"
+		case "unwrap":
+			return recv + ".Unwrap()"
+		case "unwrapOr":
+			return recv + ".UnwrapOr(" + g.argList(c.Args) + ")"
+		}
+	case *types.Result:
+		switch m.Name {
+		case "isOk":
+			return recv + ".IsOk()"
+		case "isErr":
+			return recv + ".IsErr()"
+		case "unwrap":
+			return recv + ".Unwrap()"
+		case "unwrapErr":
+			return recv + ".UnwrapErr()"
+		case "unwrapOr":
+			return recv + ".UnwrapOr(" + g.argList(c.Args) + ")"
 		}
 	}
 	return "/* internal: unknown method */"
@@ -855,6 +1104,8 @@ func (g *Generator) member(m *ast.MemberExpr) string {
 	switch g.typ[m.X].(type) {
 	case *types.Basic:
 		return "_scar_field(" + base + ", " + strconv.Quote(m.Name) + ")"
+	case *types.Struct:
+		return base + "." + g.goFieldName(m.Name)
 	case *types.Map:
 		return g.atomBase(m.X, base) + "[" + strconv.Quote(m.Name) + "]"
 	}
@@ -919,6 +1170,12 @@ func (g *Generator) goType(t types.Type) string {
 			parts[i] = g.goType(e)
 		}
 		return "(" + strings.Join(parts, ", ") + ")"
+	case *types.Struct:
+		return g.goStructName(v.Name)
+	case *types.Option:
+		return "ScarOption[" + g.goType(v.Elem) + "]"
+	case *types.Result:
+		return "ScarResult[" + g.goType(v.Ok) + ", " + g.goType(v.Err) + "]"
 	}
 	return "any"
 }
@@ -948,6 +1205,12 @@ func (g *Generator) goTypeExpr(te ast.TypeExpr) string {
 			parts[i] = g.goTypeExpr(e)
 		}
 		return "(" + strings.Join(parts, ", ") + ")"
+	case *ast.OptionTypeExpr:
+		return "ScarOption[" + g.goTypeExpr(t.Elem) + "]"
+	case *ast.ResultTypeExpr:
+		return "ScarResult[" + g.goTypeExpr(t.Ok) + ", " + g.goTypeExpr(t.Err) + "]"
+	case *ast.StructTypeExpr:
+		return g.goStructName(t.Name)
 	}
 	return "any"
 }

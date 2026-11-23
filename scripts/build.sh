@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-VERSION="${1:-1.0.2}"
+VERSION="${1:-1.0.3}"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$REPO_ROOT/dist"
 CMD_PATH="$REPO_ROOT/cmd/scar"

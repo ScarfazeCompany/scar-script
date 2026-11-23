@@ -250,6 +250,15 @@ type AssignStmt struct {
 	Value   Expr
 }
 
+// AssignFieldStmt is `obj.field = value`.
+type AssignFieldStmt struct {
+	P        diag.Position
+	X        Expr   // base expression (e.g. u)
+	Field    string // field name (e.g. "balance")
+	FieldPos diag.Position
+	Value    Expr
+}
+
 type IncDecStmt struct {
 	P       diag.Position
 	Name    string
@@ -299,24 +308,173 @@ type Program struct {
 	Stmts []Stmt
 }
 
-func (s *DeclStmt) Pos() diag.Position      { return s.P }
-func (s *MultiDeclStmt) Pos() diag.Position { return s.P }
-func (s *AssignStmt) Pos() diag.Position    { return s.P }
-func (s *IncDecStmt) Pos() diag.Position    { return s.P }
-func (s *BlockStmt) Pos() diag.Position     { return s.P }
-func (s *IfStmt) Pos() diag.Position        { return s.P }
-func (s *ForStmt) Pos() diag.Position       { return s.P }
-func (s *ExprStmt) Pos() diag.Position      { return s.P }
-func (s *FuncDecl) Pos() diag.Position      { return s.P }
-func (s *ReturnStmt) Pos() diag.Position    { return s.P }
+func (s *DeclStmt) Pos() diag.Position        { return s.P }
+func (s *MultiDeclStmt) Pos() diag.Position   { return s.P }
+func (s *AssignStmt) Pos() diag.Position      { return s.P }
+func (s *AssignFieldStmt) Pos() diag.Position { return s.P }
+func (s *IncDecStmt) Pos() diag.Position      { return s.P }
+func (s *BlockStmt) Pos() diag.Position       { return s.P }
+func (s *IfStmt) Pos() diag.Position          { return s.P }
+func (s *ForStmt) Pos() diag.Position         { return s.P }
+func (s *ExprStmt) Pos() diag.Position        { return s.P }
+func (s *FuncDecl) Pos() diag.Position        { return s.P }
+func (s *ReturnStmt) Pos() diag.Position      { return s.P }
 
-func (*DeclStmt) stmtNode()      {}
-func (*MultiDeclStmt) stmtNode() {}
-func (*AssignStmt) stmtNode()    {}
-func (*IncDecStmt) stmtNode()    {}
-func (*BlockStmt) stmtNode()     {}
-func (*IfStmt) stmtNode()        {}
-func (*ForStmt) stmtNode()       {}
-func (*ExprStmt) stmtNode()      {}
-func (*FuncDecl) stmtNode()      {}
-func (*ReturnStmt) stmtNode()    {}
+// ---------- New: Loop Control Flow ----------
+
+// BreakStmt is `break` or `stop` inside a loop.
+type BreakStmt struct {
+	P diag.Position
+}
+
+// ContinueStmt is `continue` inside a loop.
+type ContinueStmt struct {
+	P diag.Position
+}
+
+func (s *BreakStmt) Pos() diag.Position    { return s.P }
+func (s *ContinueStmt) Pos() diag.Position { return s.P }
+
+func (*BreakStmt) stmtNode()    {}
+func (*ContinueStmt) stmtNode() {}
+
+// ---------- New: Structs ----------
+
+// StructDecl is a top-level struct definition:
+// `struct User { id: int, name: str }`.
+type StructDecl struct {
+	P       diag.Position
+	Name    string
+	NamePos diag.Position
+	Fields  []StructField
+}
+
+// StructField is one field: `name: type`.
+type StructField struct {
+	Name    string
+	NamePos diag.Position
+	Type    TypeExpr
+}
+
+// StructLit is a struct literal instantiation:
+// `User { id: 1, name: "Zawiyar" }`.
+type StructLit struct {
+	P           diag.Position
+	TypeName    string
+	TypeNamePos diag.Position
+	Entries     []StructLitEntry
+}
+
+// StructLitEntry is one field assignment in a struct literal: `field: value`.
+type StructLitEntry struct {
+	Name    string
+	NamePos diag.Position
+	Value   Expr
+}
+
+// StructTypeExpr is a struct type reference in annotations: `User`.
+type StructTypeExpr struct {
+	P    diag.Position
+	Name string
+}
+
+func (s *StructDecl) Pos() diag.Position     { return s.P }
+func (s *StructLit) Pos() diag.Position      { return s.P }
+func (s *StructLitEntry) Pos() diag.Position { return s.NamePos }
+func (s *StructTypeExpr) Pos() diag.Position { return s.P }
+
+func (*StructDecl) stmtNode()     {}
+func (*StructLit) exprNode()      {}
+func (*StructTypeExpr) typeNode() {}
+
+// ---------- New: Generics (Option<T>, Result<T, E>) ----------
+
+// OptionTypeExpr is `Option<T>`.
+type OptionTypeExpr struct {
+	P    diag.Position
+	Elem TypeExpr
+}
+
+// ResultTypeExpr is `Result<T, E>`.
+type ResultTypeExpr struct {
+	P   diag.Position
+	Ok  TypeExpr
+	Err TypeExpr
+}
+
+func (t *OptionTypeExpr) Pos() diag.Position { return t.P }
+func (t *ResultTypeExpr) Pos() diag.Position { return t.P }
+
+func (*OptionTypeExpr) typeNode() {}
+func (*ResultTypeExpr) typeNode() {}
+
+// ---------- New: Generic Constructors ----------
+
+// OptionSome is `Some(value)`.
+type OptionSome struct {
+	P   diag.Position
+	Val Expr
+}
+
+// OptionNone is `None`.
+type OptionNone struct {
+	P diag.Position
+}
+
+// ResultOk is `Ok(value)`.
+type ResultOk struct {
+	P   diag.Position
+	Val Expr
+}
+
+// ResultErr is `Err(error)`.
+type ResultErr struct {
+	P   diag.Position
+	Err Expr
+}
+
+func (e *OptionSome) Pos() diag.Position { return e.P }
+func (e *OptionNone) Pos() diag.Position { return e.P }
+func (e *ResultOk) Pos() diag.Position   { return e.P }
+func (e *ResultErr) Pos() diag.Position  { return e.P }
+
+func (*OptionSome) exprNode() {}
+func (*OptionNone) exprNode() {}
+func (*ResultOk) exprNode()   {}
+func (*ResultErr) exprNode()  {}
+
+// ---------- New: Module System ----------
+
+// ExportDecl wraps a top-level declaration with an export flag.
+// The checker resolves these during phase 1.
+type ExportDecl struct {
+	P    diag.Position
+	Decl Stmt // *ast.FuncDecl, *ast.StructDecl, *ast.DeclStmt, *ast.Const declared via DeclStmt
+}
+
+// ImportStmt is `import { name1, name2 } from "./path.scar"`.
+type ImportStmt struct {
+	P        diag.Position
+	Names    []string
+	NamePoss []diag.Position
+	From     string
+	FromPos  diag.Position
+}
+
+func (s *ExportDecl) Pos() diag.Position { return s.P }
+func (s *ImportStmt) Pos() diag.Position { return s.P }
+
+func (*ExportDecl) stmtNode() {}
+func (*ImportStmt) stmtNode() {}
+
+func (*DeclStmt) stmtNode()        {}
+func (*MultiDeclStmt) stmtNode()   {}
+func (*AssignStmt) stmtNode()      {}
+func (*AssignFieldStmt) stmtNode() {}
+func (*IncDecStmt) stmtNode()      {}
+func (*BlockStmt) stmtNode()       {}
+func (*IfStmt) stmtNode()          {}
+func (*ForStmt) stmtNode()         {}
+func (*ExprStmt) stmtNode()        {}
+func (*FuncDecl) stmtNode()        {}
+func (*ReturnStmt) stmtNode()      {}

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-11-23
+
+### Added
+- **Loop Control Flow**: `continue`, `break`, and `stop` keywords. Both `break` and `stop` map to the same loop-exit statement; `continue` skips to the next iteration. Clean semantic error when used outside a loop.
+- **User-Defined Data Structures**: `struct Name { field: type, ... }` declarations, struct literal instantiation (`User { id: 1, name: "Zawiyar" }`), dot-access field reads, and field mutation via `mut` bindings. Validates required/unknown fields and type mismatches (incl. int→dec widening).
+- **Type-Safe Error & Null Handling**: Built-in generics `Option<T>` (`Some`, `None`, `isSome`, `isNone`, `unwrap`, `unwrapOr`) and `Result<T, E>` (`Ok`, `Err`, `isOk`, `isErr`, `unwrap`, `unwrapErr`, `unwrapOr`). Emits zero-overhead `ScarOption[T]` / `ScarResult[T, E]` Go generic helpers in the generated prelude.
+- **File-Based Module System**: `import { ... } from "./path.scar"` with `export` modifier; relative module resolution, export validation, and circular-dependency detection.
+
+### Technical Details
+- Lexer/Token: new keyword tokens (`struct`, `continue`, `break`, `stop`, `export`, `import`, `from`); generic constructors (`Some`, `None`, `Ok`, `Err`) and `Option`/`Result` type names handled as identifiers.
+- Checker: phase-1 struct registry; loop-depth tracking; struct literal validation; Option/Result inference.
+- Codegen: Go `type` emission for structs; `ScarOption[T]` / `ScarResult[T, E]` prelude; `continue`/`break` emission.
+- Driver: module resolver with dependency graph, cycle detection, and bundling.
+
 ## [1.0.2] - 2026-10-30
 
 ### Added

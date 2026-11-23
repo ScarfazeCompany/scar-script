@@ -31,6 +31,24 @@ const (
 	T_DEC  Type = "dec"
 	FUNC   Type = "func"
 	RETURN Type = "return"
+	// Loop control flow
+	CONTINUE Type = "continue"
+	BREAK    Type = "break"
+	STOP     Type = "stop"
+	// Structs
+	STRUCT Type = "struct"
+	// Generics
+	OPTION Type = "option"
+	RESULT Type = "result"
+	// Constructors
+	SOME Type = "some"
+	NONE Type = "none"
+	OK   Type = "ok"
+	ERR  Type = "err"
+	// Modules
+	EXPORT Type = "export"
+	IMPORT Type = "import"
+	FROM   Type = "from"
 
 	// Operators & punctuation
 	ASSIGN     Type = "="
@@ -83,6 +101,16 @@ var Keywords = map[string]Type{
 	"dec":    T_DEC,
 	"func":   FUNC,
 	"return": RETURN,
+	// Loop control flow
+	"continue": CONTINUE,
+	"break":    BREAK,
+	"stop":     STOP,
+	// Structs
+	"struct": STRUCT,
+	// Modules
+	"export": EXPORT,
+	"import": IMPORT,
+	"from":   FROM,
 }
 
 // StrSeg is one part of a string literal token: either plain text or

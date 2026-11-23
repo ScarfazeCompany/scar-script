@@ -2,6 +2,7 @@ package parser
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/ScarfazeCompany/scar-script/internal/ast"
 	"github.com/ScarfazeCompany/scar-script/internal/diag"
@@ -10,10 +11,11 @@ import (
 )
 
 type Parser struct {
-	toks  []token.Token
-	pos   int
-	file  string
-	depth int // () and [] nesting — newlines are skipped while > 0
+	toks        []token.Token
+	pos         int
+	file        string
+	depth       int             // () and [] nesting — newlines are skipped while > 0
+	structNames map[string]bool // top-level struct names declared in this file
 }
 
 type parsePanic struct{ err *diag.Error }
@@ -21,7 +23,12 @@ type parsePanic struct{ err *diag.Error }
 // Parse turns a token stream into a Program. On failure it returns the
 // first syntax error.
 func Parse(toks []token.Token, file string) (prog *ast.Program, err *diag.Error) {
-	p := &Parser{toks: toks, file: file}
+	p := &Parser{toks: toks, file: file, structNames: map[string]bool{}}
+	for i := 0; i+1 < len(toks); i++ {
+		if toks[i].Type == token.STRUCT && toks[i+1].Type == token.IDENT {
+			p.structNames[toks[i+1].Lit] = true
+		}
+	}
 	defer func() {
 		if r := recover(); r != nil {
 			if pe, ok := r.(parsePanic); ok {
@@ -39,6 +46,16 @@ func Parse(toks []token.Token, file string) (prog *ast.Program, err *diag.Error)
 
 func (p *Parser) cur() token.Token  { return p.toks[p.pos] }
 func (p *Parser) peek() token.Token { return p.toks[p.pos+1] }
+
+// peekInfo returns the next token after the current position, skipping
+// newlines, along with its index.
+func (p *Parser) peekInfo() (token.Token, int) {
+	i := p.pos + 1
+	for i < len(p.toks) && p.toks[i].Type == token.NEWLINE {
+		i++
+	}
+	return p.toks[i], i
+}
 
 func (p *Parser) at(t token.Type) bool { return p.cur().Type == t }
 
@@ -137,11 +154,23 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseFor()
 	case token.FUNC:
 		return p.parseFuncDecl()
+	case token.STRUCT:
+		return p.parseStructDecl()
+	case token.EXPORT:
+		return p.parseExportDecl()
+	case token.IMPORT:
+		return p.parseImportStmt()
 	case token.RETURN:
 		return p.parseReturn()
+	case token.CONTINUE, token.BREAK, token.STOP:
+		return p.parseLoopControl()
 	}
 	if p.at(token.IDENT) && p.peek().Type == token.ASSIGN {
 		return p.parseAssign()
+	}
+	if p.at(token.IDENT) && p.peek().Type == token.DOT && p.pos+3 < len(p.toks) && p.toks[p.pos+2].Type == token.IDENT && p.toks[p.pos+3].Type == token.ASSIGN {
+		// obj.field = value
+		return p.parseAssignField()
 	}
 	return p.parseExprStmt()
 }
@@ -257,11 +286,128 @@ func (p *Parser) parseReturn() *ast.ReturnStmt {
 	return rs
 }
 
+// parseLoopControl parses `continue`, `break`, or `stop` statements.
+func (p *Parser) parseLoopControl() ast.Stmt {
+	kw := p.advance()
+	switch kw.Type {
+	case token.CONTINUE:
+		return &ast.ContinueStmt{P: p.tkPos(kw)}
+	default: // BREAK or STOP both map to BreakStmt
+		return &ast.BreakStmt{P: p.tkPos(kw)}
+	}
+}
+
+// parseStructDecl parses `struct Name { field: type, ... }`.
+func (p *Parser) parseStructDecl() ast.Stmt {
+	kw := p.expect(token.STRUCT)
+	name := p.expectIdent()
+	sd := &ast.StructDecl{P: p.tkPos(kw), Name: name.Lit, NamePos: p.tkPos(name)}
+	p.expect(token.LBRACE)
+	p.skipNewlines()
+	for !p.at(token.RBRACE) && !p.at(token.EOF) {
+		fname := p.expectIdent()
+		p.expect(token.COLON)
+		ftype := p.parseType()
+		sd.Fields = append(sd.Fields, ast.StructField{
+			Name:    fname.Lit,
+			NamePos: p.tkPos(fname),
+			Type:    ftype,
+		})
+		p.skipNewlines()
+		if p.at(token.COMMA) {
+			p.advance()
+			p.skipNewlines()
+			if p.at(token.RBRACE) {
+				break
+			}
+			continue
+		}
+		if p.at(token.RBRACE) {
+			break
+		}
+		continue
+	}
+	p.expect(token.RBRACE)
+	return sd
+}
+
+// parseExportDecl parses `export <declaration>`.
+func (p *Parser) parseExportDecl() ast.Stmt {
+	kw := p.expect(token.EXPORT)
+	// Parse the declaration that follows
+	inner := p.parseStmt()
+	return &ast.ExportDecl{P: p.tkPos(kw), Decl: inner}
+}
+
+// parseImportStmt parses `import { name1, name2 } from "./path.scar"`.
+func (p *Parser) parseImportStmt() ast.Stmt {
+	kw := p.expect(token.IMPORT)
+	p.expect(token.LBRACE)
+	var names []string
+	var namePoss []diag.Position
+	for {
+		n := p.expectIdent()
+		names = append(names, n.Lit)
+		namePoss = append(namePoss, p.tkPos(n))
+		p.skipNewlines()
+		if p.at(token.COMMA) {
+			p.advance()
+			p.skipNewlines()
+			if p.at(token.RBRACE) {
+				break
+			}
+			continue
+		}
+		break
+	}
+	p.expect(token.RBRACE)
+	p.expect(token.FROM)
+	fromTok := p.expect(token.STRING)
+	// Extract the string value from segments
+	fromPath := ""
+	for _, seg := range fromTok.Segs {
+		if !seg.IsExpr {
+			fromPath += seg.Text
+		}
+	}
+	return &ast.ImportStmt{
+		P:        p.tkPos(kw),
+		Names:    names,
+		NamePoss: namePoss,
+		From:     fromPath,
+		FromPos:  p.tkPos(fromTok),
+	}
+}
+
 func (p *Parser) parseAssign() *ast.AssignStmt {
 	name := p.expectIdent()
 	p.expect(token.ASSIGN)
 	val := p.parseExpression()
 	return &ast.AssignStmt{P: p.tkPos(name), Name: name.Lit, NamePos: p.tkPos(name), Value: val}
+}
+
+// parseAssignField parses `obj.field = value`.
+func (p *Parser) parseAssignField() ast.Stmt {
+	base := p.parsePrimary() // parses u
+	// base should be an Ident
+	id, ok := base.(*ast.Ident)
+	if !ok {
+		p.failNow("expected identifier for field assignment")
+	}
+	if !p.at(token.DOT) {
+		p.failNow("expected '.' after identifier")
+	}
+	p.advance() // consume '.'
+	field := p.expectIdent()
+	p.expect(token.ASSIGN)
+	val := p.parseExpression()
+	return &ast.AssignFieldStmt{
+		P:        id.P,
+		X:        id,
+		Field:    field.Lit,
+		FieldPos: p.tkPos(field),
+		Value:    val,
+	}
 }
 
 func (p *Parser) parseExprStmt() ast.Stmt {
@@ -328,6 +474,61 @@ func (p *Parser) parseType() ast.TypeExpr {
 	case token.T_STR, token.T_INT, token.T_BOOL, token.T_ANY, token.T_DEC:
 		p.advance()
 		base = &ast.BasicType{P: p.tkPos(start), Kind: start.Type}
+	case token.OPTION:
+		p.advance()
+		p.expect(token.LBRACKET)
+		elem := p.parseType()
+		p.expect(token.RBRACKET)
+		base = &ast.OptionTypeExpr{P: p.tkPos(start), Elem: elem}
+	case token.RESULT:
+		p.advance()
+		p.expect(token.LBRACKET)
+		ok := p.parseType()
+		p.expect(token.COMMA)
+		err := p.parseType()
+		p.expect(token.RBRACKET)
+		base = &ast.ResultTypeExpr{P: p.tkPos(start), Ok: ok, Err: err}
+	case token.IDENT:
+		name := start.Lit
+		switch strings.ToLower(name) {
+		case "option":
+			p.advance()
+			if p.at(token.LBRACKET) {
+				p.advance()
+			} else {
+				p.expect(token.LT)
+			}
+			elem := p.parseType()
+			if p.at(token.LBRACKET) {
+				p.advance()
+			} else {
+				p.expect(token.GT)
+			}
+			base = &ast.OptionTypeExpr{P: p.tkPos(start), Elem: elem}
+		case "result":
+			p.advance()
+			if p.at(token.LBRACKET) {
+				p.advance()
+			} else {
+				p.expect(token.LT)
+			}
+			okT := p.parseType()
+			p.expect(token.COMMA)
+			errT := p.parseType()
+			if p.at(token.LBRACKET) {
+				p.advance()
+			} else {
+				p.expect(token.GT)
+			}
+			base = &ast.ResultTypeExpr{P: p.tkPos(start), Ok: okT, Err: errT}
+		default:
+			if p.structNames[name] {
+				p.advance()
+				base = &ast.StructTypeExpr{P: p.tkPos(start), Name: name}
+			} else {
+				p.failNow("expected type, got %q", name)
+			}
+		}
 	case token.LPAREN:
 		p.advance()
 		p.depth++
@@ -485,6 +686,28 @@ func (p *Parser) parsePostfix() ast.Expr {
 			p.depth--
 			p.expect(token.RPAREN)
 			e = &ast.CallExpr{P: e.Pos(), Callee: e, Args: args}
+		case token.LBRACE:
+			// Struct literal: TypeName { field: value, ... }
+			// Only treat `Ident {` as a struct literal when what follows the
+			// brace looks like struct fields (`field: value`) or an empty
+			// struct (`}`). A bare `{` after an expression is a block opener
+			// (e.g. `if x {` or `for tag in tags {`).
+			if _, isIdent := e.(*ast.Ident); isIdent {
+				t1, i1 := p.peekInfo()
+				isStruct := false
+				if t1.Type == token.RBRACE {
+					isStruct = true
+				} else if t1.Type == token.IDENT && i1+1 < len(p.toks) && p.toks[i1+1].Type == token.COLON {
+					isStruct = true
+				}
+				if isStruct {
+					e = p.parseStructLit(e.(*ast.Ident))
+				} else {
+					return e
+				}
+			} else {
+				return e
+			}
 		default:
 			return e
 		}
@@ -563,6 +786,12 @@ func (p *Parser) parsePrimary() ast.Expr {
 
 	case token.T_STR, token.T_INT, token.T_BOOL, token.T_ANY, token.T_DEC, token.MAP:
 		p.failNow("type %q cannot be used as a value", t.Lit)
+
+	case token.SOME, token.NONE, token.OK, token.ERR:
+		// Constructors: Some(x), None, Ok(x), Err(e) — represented as
+		// Ident calls that the checker resolves specially.
+		p.advance()
+		return &ast.Ident{P: p.tkPos(t), Name: t.Lit}
 
 	case token.EOF:
 		p.failNow("unexpected end of file, expected expression")
@@ -687,4 +916,45 @@ func (p *Parser) parseMapKey() ast.Expr {
 		p.failNow("expected map key (identifier or string), got %q", t.String())
 	}
 	return nil
+}
+
+// parseStructLit parses `TypeName { field: value, ... }` assuming the
+// TypeName Ident has already been consumed.
+func (p *Parser) parseStructLit(typeName *ast.Ident) *ast.StructLit {
+	open := p.expect(token.LBRACE)
+	sl := &ast.StructLit{
+		P:           p.tkPos(open),
+		TypeName:    typeName.Name,
+		TypeNamePos: typeName.P,
+	}
+	p.skipNewlines()
+	if p.at(token.RBRACE) {
+		p.advance()
+		return sl
+	}
+	for {
+		fname := p.expectIdent()
+		p.expect(token.COLON)
+		val := p.parseExpression()
+		sl.Entries = append(sl.Entries, ast.StructLitEntry{
+			Name:    fname.Lit,
+			NamePos: p.tkPos(fname),
+			Value:   val,
+		})
+		p.skipNewlines()
+		if p.at(token.COMMA) {
+			p.advance()
+			p.skipNewlines()
+			if p.at(token.RBRACE) {
+				break
+			}
+			continue
+		}
+		if p.at(token.RBRACE) {
+			break
+		}
+		continue
+	}
+	p.expect(token.RBRACE)
+	return sl
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/ScarfazeCompany/scar-script/internal/lsp"
 )
 
-const version = "1.0.2"
+const version = "1.0.3"
 
 const usage = `ScarScript compiler v` + version + `
 

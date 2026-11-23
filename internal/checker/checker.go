@@ -39,10 +39,12 @@ type Checker struct {
 	scope      *scope
 	types      map[ast.Expr]types.Type
 	allVars    []*varInfo
-	funcs      map[string]*types.Func // all top-level functions (phase 1)
-	inFunc     int                    // >0 while checking a function body
-	blockDepth int                    // nesting of blocks (top level == 0)
-	curResult  types.Type             // result type of the current function
+	funcs      map[string]*types.Func   // all top-level functions (phase 1)
+	structs    map[string]*types.Struct // all top-level structs (phase 1)
+	inFunc     int                      // >0 while checking a function body
+	loopDepth  int                      // >0 while inside a for loop
+	blockDepth int                      // nesting of blocks (top level == 0)
+	curResult  types.Type               // result type of the current function
 }
 
 // Result carries everything the code generator needs after a successful
@@ -60,10 +62,11 @@ type checkPanic struct{ err *diag.Error }
 // It returns the first error found, or nil.
 func Check(prog *ast.Program) (res *Result, err *diag.Error) {
 	c := &Checker{
-		file:  prog.File,
-		scope: &scope{vars: map[string]*varInfo{}},
-		types: map[ast.Expr]types.Type{},
-		funcs: map[string]*types.Func{},
+		file:    prog.File,
+		scope:   &scope{vars: map[string]*varInfo{}},
+		types:   map[ast.Expr]types.Type{},
+		funcs:   map[string]*types.Func{},
+		structs: map[string]*types.Struct{},
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -74,6 +77,17 @@ func Check(prog *ast.Program) (res *Result, err *diag.Error) {
 			panic(r)
 		}
 	}()
+	// Phase 1a: register every top-level struct first so struct types
+	// referenced by function signatures (e.g. Option<User>) resolve.
+	for _, s := range prog.Stmts {
+		if ed, ok := s.(*ast.ExportDecl); ok {
+			if sd, ok := ed.Decl.(*ast.StructDecl); ok {
+				c.registerStruct(sd)
+			}
+		} else if sd, ok := s.(*ast.StructDecl); ok {
+			c.registerStruct(sd)
+		}
+	}
 	// Phase 1: register every top-level function signature so calls work
 	// before (or after) the declaration, and recursion works.
 	for _, s := range prog.Stmts {
@@ -138,8 +152,9 @@ var goKeywords = map[string]bool{
 	"default": true, "defer": true, "else": true, "fallthrough": true,
 	"for": true, "func": true, "go": true, "goto": true, "if": true,
 	"import": true, "map": true, "package": true, "range": true,
-	"return": true, "select": true, "struct": true, "switch": true,
+	"return": true, "select": true, "struct": true, "stop": true, "switch": true,
 	"type": true, "var": true,
+	"export": true, "from": true,
 }
 
 // checkName rejects builtin/module names, Go keywords, and `_`-prefixed
@@ -212,6 +227,29 @@ func (c *Checker) registerFunc(fd *ast.FuncDecl) {
 	c.funcs[fd.Name] = ft
 }
 
+func (c *Checker) registerStruct(sd *ast.StructDecl) {
+	c.checkName(sd.Name, sd.NamePos)
+	if _, ok := c.structs[sd.Name]; ok {
+		c.fail(sd.NamePos, "%q is already declared", sd.Name)
+	}
+	seen := map[string]bool{}
+	fields := make([]*types.StructField, len(sd.Fields))
+	for i, f := range sd.Fields {
+		if seen[f.Name] {
+			c.fail(f.NamePos, "duplicate field %q in struct %q", f.Name, sd.Name)
+		}
+		seen[f.Name] = true
+		fields[i] = &types.StructField{
+			Name: f.Name,
+			Type: c.resolveType(f.Type),
+		}
+	}
+	c.structs[sd.Name] = &types.Struct{
+		Name:   sd.Name,
+		Fields: fields,
+	}
+}
+
 func (c *Checker) push() { c.scope = &scope{parent: c.scope, vars: map[string]*varInfo{}} }
 
 // pushIsolated starts a scope with no parent (named functions see only
@@ -230,6 +268,8 @@ func (c *Checker) checkStmt(s ast.Stmt) {
 		c.checkMultiDecl(st)
 	case *ast.AssignStmt:
 		c.checkAssign(st)
+	case *ast.AssignFieldStmt:
+		c.checkAssignField(st)
 	case *ast.IncDecStmt:
 		c.checkIncDec(st)
 	case *ast.IfStmt:
@@ -247,6 +287,21 @@ func (c *Checker) checkStmt(s ast.Stmt) {
 		c.checkFuncDecl(st)
 	case *ast.ReturnStmt:
 		c.checkReturn(st)
+	case *ast.BreakStmt, *ast.ContinueStmt:
+		if c.loopDepth == 0 {
+			kw := "break"
+			if _, isCont := s.(*ast.ContinueStmt); isCont {
+				kw = "continue"
+			}
+			c.fail(st.Pos(), "[Semantic Error] line %d:col %d: '%s' cannot be used outside of a loop.",
+				st.Pos().Line, st.Pos().Col, kw)
+		}
+	case *ast.StructDecl:
+		// Structs are registered in phase 1; nothing to check here
+	case *ast.ExportDecl:
+		// The inner declaration was already checked; skip
+	case *ast.ImportStmt:
+		// Import resolution is handled by the driver; skip here
 	default:
 		c.fail(s.Pos(), "internal: unknown statement %T", s)
 	}
@@ -398,6 +453,40 @@ func (c *Checker) checkAssign(a *ast.AssignStmt) {
 	}
 }
 
+func (c *Checker) checkAssignField(a *ast.AssignFieldStmt) {
+	base := c.checkExpr(a.X, nil)
+	st, ok := base.(*types.Struct)
+	if !ok {
+		c.fail(a.Pos(), "cannot assign to field %q of non-struct type %q", a.Field, base)
+	}
+	var fieldType types.Type
+	found := false
+	for _, f := range st.Fields {
+		if f.Name == a.Field {
+			fieldType = f.Type
+			found = true
+			break
+		}
+	}
+	if !found {
+		c.fail(a.FieldPos, "struct %q has no field %q", st.Name, a.Field)
+	}
+	// Check mutability of the base variable
+	if id, ok := a.X.(*ast.Ident); ok {
+		info := c.lookupVar(id.Name, id.P)
+		if info.isConst {
+			c.fail(a.FieldPos, "cannot assign to field %q of constant %q", a.Field, id.Name)
+		}
+		if !info.mut {
+			c.fail(a.FieldPos, "cannot assign to field %q of immutable variable %q (declare it with 'val')", a.Field, id.Name)
+		}
+	}
+	vt := c.checkExpr(a.Value, fieldType)
+	if !assignableVal(fieldType, vt, a.Value) {
+		c.fail(a.Value.Pos(), "cannot use value of type %q where type %q is expected", vt, fieldType)
+	}
+}
+
 func (c *Checker) lookupVar(name string, pos diag.Position) *varInfo {
 	info := c.scope.lookup(name)
 	if info == nil {
@@ -435,7 +524,11 @@ func (c *Checker) checkIf(s *ast.IfStmt) {
 
 func (c *Checker) checkFor(f *ast.ForStmt) {
 	c.push()
-	defer c.pop()
+	c.loopDepth++
+	defer func() {
+		c.loopDepth--
+		c.pop()
+	}()
 
 	iterT := c.checkExpr(f.Iterable, nil)
 
@@ -653,6 +746,12 @@ func (c *Checker) resolveType(te ast.TypeExpr) types.Type {
 		return &types.Map{Key: k, Val: c.resolveType(t.Val)}
 	case *ast.TupleTypeExpr:
 		c.fail(t.P, "tuple types can only be used as a function return type")
+	case *ast.StructTypeExpr:
+		s, ok := c.structs[t.Name]
+		if !ok {
+			c.fail(t.P, "undefined struct %q", t.Name)
+		}
+		return s
 	}
 	c.fail(te.Pos(), "internal: unknown type %T", te)
 	return nil
@@ -667,6 +766,15 @@ func (c *Checker) resolveResult(te ast.TypeExpr) types.Type {
 			tup.Elems = append(tup.Elems, c.resolveResult(el))
 		}
 		return tup
+	}
+	if t, ok := te.(*ast.OptionTypeExpr); ok {
+		return &types.Option{Elem: c.resolveResult(t.Elem)}
+	}
+	if t, ok := te.(*ast.ResultTypeExpr); ok {
+		return &types.Result{
+			Ok:  c.resolveResult(t.Ok),
+			Err: c.resolveResult(t.Err),
+		}
 	}
 	return c.resolveType(te)
 }
@@ -709,7 +817,7 @@ func (c *Checker) checkExprInner(e ast.Expr, expected types.Type) types.Type {
 	case *ast.StrLit:
 		return c.checkStrLit(ex)
 	case *ast.Ident:
-		return c.checkIdent(ex)
+		return c.checkIdent(ex, expected)
 	case *ast.ArrayLit:
 		return c.checkArrayLit(ex, expected)
 	case *ast.MapLit:
@@ -723,13 +831,23 @@ func (c *Checker) checkExprInner(e ast.Expr, expected types.Type) types.Type {
 	case *ast.RangeExpr:
 		return c.checkRange(ex)
 	case *ast.CallExpr:
-		return c.checkCall(ex)
+		return c.checkCall(ex, expected)
 	case *ast.MemberExpr:
 		return c.checkMember(ex)
 	case *ast.IndexExpr:
 		return c.checkIndex(ex)
 	case *ast.FuncLit:
 		return c.checkFuncLit(ex)
+	case *ast.StructLit:
+		return c.checkStructLit(ex)
+	case *ast.OptionSome:
+		return c.checkOptionSome(ex, expected)
+	case *ast.OptionNone:
+		return c.checkOptionNone(ex, expected)
+	case *ast.ResultOk:
+		return c.checkResultOk(ex, expected)
+	case *ast.ResultErr:
+		return c.checkResultErr(ex, expected)
 	}
 	c.fail(e.Pos(), "internal: unknown expression %T", e)
 	return nil
@@ -751,7 +869,7 @@ func (c *Checker) checkStrLit(s *ast.StrLit) types.Type {
 	return types.StrType
 }
 
-func (c *Checker) checkIdent(id *ast.Ident) types.Type {
+func (c *Checker) checkIdent(id *ast.Ident, expected types.Type) types.Type {
 	if id.Name == "print" {
 		c.fail(id.P, "'print' is a builtin function — call it like print(...)")
 	}
@@ -765,6 +883,13 @@ func (c *Checker) checkIdent(id *ast.Ident) types.Type {
 	if info == nil {
 		if _, ok := c.funcs[id.Name]; ok {
 			c.fail(id.P, "%q is a function — call it like %s(...)", id.Name, id.Name)
+		}
+		if strings.ToLower(id.Name) == "none" {
+			// Bare `None` unifies with any Option<T>; use the expected type when known.
+			if opt, ok := expected.(*types.Option); ok {
+				return opt
+			}
+			return &types.Option{Elem: types.AnyType}
 		}
 		c.fail(id.P, "undefined variable %q", id.Name)
 	}
@@ -959,6 +1084,14 @@ func (c *Checker) checkMember(m *ast.MemberExpr) types.Type {
 		if bt.K == types.Any {
 			return types.AnyType
 		}
+	case *types.Struct:
+		for _, f := range bt.Fields {
+			if f.Name == m.Name {
+				return f.Type
+			}
+		}
+		c.fail(m.NamePos, "struct %q has no field %q", bt.Name, m.Name)
+		return nil
 	case *types.Map:
 		if types.Equal(bt.Key, types.StrType) {
 			if isMethod(c, m.Name, base) {
@@ -992,23 +1125,56 @@ func isMethod(c *Checker, name string, recv types.Type) bool {
 	return false
 }
 
-func (c *Checker) checkCall(call *ast.CallExpr) types.Type {
+func (c *Checker) checkCall(call *ast.CallExpr, expected types.Type) types.Type {
 	switch callee := call.Callee.(type) {
 	case *ast.Ident:
-		return c.checkBuiltinCall(callee, call)
+		return c.checkBuiltinCall(callee, call, expected)
 	case *ast.MemberExpr:
-		return c.checkMemberCall(callee, call)
+		return c.checkMemberCall(callee, call, expected)
 	}
 	c.fail(call.Callee.Pos(), "expression of this type is not callable")
 	return nil
 }
 
-func (c *Checker) checkBuiltinCall(id *ast.Ident, call *ast.CallExpr) types.Type {
+func (c *Checker) checkBuiltinCall(id *ast.Ident, call *ast.CallExpr, expected types.Type) types.Type {
 	if id.Name == "print" {
 		for _, a := range call.Args {
 			c.exprVal(a, nil)
 		}
 		return types.VoidType
+	}
+	// Generic constructors (Some/None/Ok/Err — case-insensitive)
+	lname := strings.ToLower(id.Name)
+	if lname == "some" {
+		c.nargs(call, 1)
+		t := c.exprVal(call.Args[0], nil)
+		return &types.Option{Elem: t}
+	}
+	if lname == "none" {
+		c.nargs(call, 0)
+		// None unifies with any Option<T>. If expected is Option<T>, use that T.
+		if opt, ok := expected.(*types.Option); ok {
+			return opt
+		}
+		// Otherwise, return a placeholder; unification happens at use site.
+		return &types.Option{Elem: types.AnyType}
+	}
+	if lname == "ok" {
+		c.nargs(call, 1)
+		okT := c.exprVal(call.Args[0], nil)
+		// If expected is Result<T, E>, use T from expected
+		if res, ok := expected.(*types.Result); ok {
+			return &types.Result{Ok: okT, Err: res.Err}
+		}
+		return &types.Result{Ok: okT, Err: types.AnyType}
+	}
+	if lname == "err" {
+		c.nargs(call, 1)
+		errT := c.exprVal(call.Args[0], nil)
+		if res, ok := expected.(*types.Result); ok {
+			return &types.Result{Ok: res.Ok, Err: errT}
+		}
+		return &types.Result{Ok: types.AnyType, Err: errT}
 	}
 	if info := c.scope.lookup(id.Name); info != nil {
 		ft, ok := info.typ.(*types.Func)
@@ -1097,7 +1263,7 @@ func (c *Checker) checkModuleCall(mod string, m *ast.MemberExpr, call *ast.CallE
 	return nil
 }
 
-func (c *Checker) checkMemberCall(m *ast.MemberExpr, call *ast.CallExpr) types.Type {
+func (c *Checker) checkMemberCall(m *ast.MemberExpr, call *ast.CallExpr, expected types.Type) types.Type {
 	// math.* / file.* / sys.* / time.*
 	if id, ok := m.X.(*ast.Ident); ok && isModule(id.Name) {
 		return c.checkModuleCall(id.Name, m, call)
@@ -1120,6 +1286,15 @@ func (c *Checker) checkMemberCall(m *ast.MemberExpr, call *ast.CallExpr) types.T
 		c.fail(m.NamePos, "cannot call methods on %q — narrow the type first", recv)
 	}
 
+	// Option<T> methods
+	if opt, ok := recv.(*types.Option); ok {
+		return c.checkOptionMethod(opt, m, call)
+	}
+	// Result<T, E> methods
+	if res, ok := recv.(*types.Result); ok {
+		return c.checkResultMethod(res, m, call)
+	}
+
 	if b, ok := recv.(*types.Basic); ok && b.K == types.Str {
 		return c.checkStrMethod(recv, m, call)
 	}
@@ -1128,6 +1303,9 @@ func (c *Checker) checkMemberCall(m *ast.MemberExpr, call *ast.CallExpr) types.T
 	}
 	if _, ok := recv.(*types.Map); ok {
 		return c.checkMapMethod(recv, m, call)
+	}
+	if _, ok := recv.(*types.Struct); ok {
+		c.fail(m.NamePos, "struct %q has no method %q", recv, m.Name)
 	}
 	c.fail(m.NamePos, "type %q has no method %q", recv, m.Name)
 	return nil
@@ -1203,4 +1381,126 @@ func (c *Checker) checkMapMethod(recv types.Type, m *ast.MemberExpr, call *ast.C
 	}
 	c.fail(m.NamePos, "map has no method %q (available: len)", m.Name)
 	return nil
+}
+
+func (c *Checker) checkOptionMethod(opt *types.Option, m *ast.MemberExpr, call *ast.CallExpr) types.Type {
+	switch m.Name {
+	case "isSome", "isNone":
+		c.nargs(call, 0)
+		return types.BoolType
+	case "unwrap":
+		c.nargs(call, 0)
+		return opt.Elem
+	case "unwrapOr":
+		c.nargs(call, 1)
+		t := c.exprVal(call.Args[0], opt.Elem)
+		if !assignableVal(opt.Elem, t, call.Args[0]) {
+			c.fail(call.Args[0].Pos(), "unwrapOr expects %s, got %s", opt.Elem, t)
+		}
+		return opt.Elem
+	default:
+		c.fail(m.NamePos, "option has no method %q (available: isSome, isNone, unwrap, unwrapOr)", m.Name)
+		return nil
+	}
+}
+
+func (c *Checker) checkResultMethod(res *types.Result, m *ast.MemberExpr, call *ast.CallExpr) types.Type {
+	switch m.Name {
+	case "isOk", "isErr":
+		c.nargs(call, 0)
+		return types.BoolType
+	case "unwrap":
+		c.nargs(call, 0)
+		return res.Ok
+	case "unwrapErr":
+		c.nargs(call, 0)
+		return res.Err
+	case "unwrapOr":
+		c.nargs(call, 1)
+		t := c.exprVal(call.Args[0], res.Ok)
+		if !assignableVal(res.Ok, t, call.Args[0]) {
+			c.fail(call.Args[0].Pos(), "unwrapOr expects %s, got %s", res.Ok, t)
+		}
+		return res.Ok
+	default:
+		c.fail(m.NamePos, "result has no method %q (available: isOk, isErr, unwrap, unwrapErr, unwrapOr)", m.Name)
+		return nil
+	}
+}
+
+func (c *Checker) checkStructLit(sl *ast.StructLit) types.Type {
+	st, ok := c.structs[sl.TypeName]
+	if !ok {
+		c.fail(sl.TypeNamePos, "undefined struct %q", sl.TypeName)
+	}
+	seen := map[string]bool{}
+	for _, entry := range sl.Entries {
+		if seen[entry.Name] {
+			c.fail(entry.NamePos, "duplicate field %q in struct literal", entry.Name)
+		}
+		seen[entry.Name] = true
+		// Find the field
+		var fieldType types.Type
+		found := false
+		for _, f := range st.Fields {
+			if f.Name == entry.Name {
+				fieldType = f.Type
+				found = true
+				break
+			}
+		}
+		if !found {
+			c.fail(entry.NamePos, "struct %q has no field %q", st.Name, entry.Name)
+			continue
+		}
+		vt := c.checkExpr(entry.Value, fieldType)
+		if !assignableVal(fieldType, vt, entry.Value) {
+			c.fail(entry.Value.Pos(), "cannot use value of type %q where type %q is expected", vt, fieldType)
+		}
+	}
+	// Check for missing required fields
+	for _, f := range st.Fields {
+		if !seen[f.Name] {
+			c.fail(sl.Pos(), "missing required field %q in struct literal", f.Name)
+		}
+	}
+	return st
+}
+
+func (c *Checker) checkOptionSome(os *ast.OptionSome, expected types.Type) types.Type {
+	var elemT types.Type = types.AnyType
+	if opt, ok := expected.(*types.Option); ok {
+		elemT = opt.Elem
+	}
+	vt := c.exprVal(os.Val, elemT)
+	return &types.Option{Elem: vt}
+}
+
+func (c *Checker) checkOptionNone(on *ast.OptionNone, expected types.Type) types.Type {
+	if opt, ok := expected.(*types.Option); ok {
+		return opt
+	}
+	return &types.Option{Elem: types.AnyType}
+}
+
+func (c *Checker) checkResultOk(ok *ast.ResultOk, expected types.Type) types.Type {
+	var okT types.Type = types.AnyType
+	var errT types.Type = types.AnyType
+	if res, ok := expected.(*types.Result); ok {
+		okT = res.Ok
+		errT = res.Err
+	}
+	vt := c.exprVal(ok.Val, okT)
+	return &types.Result{Ok: vt, Err: errT}
+}
+
+func (c *Checker) checkResultErr(err *ast.ResultErr, expected types.Type) types.Type {
+	var okT types.Type = types.AnyType
+	var errT types.Type = types.AnyType
+	if res, ok := expected.(*types.Result); ok {
+		okT = res.Ok
+		errT = res.Err
+	}
+	vt := c.exprVal(err.Err, errT)
+	return &types.Result{Ok: okT, Err: vt}
 }

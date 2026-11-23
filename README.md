@@ -27,7 +27,7 @@
 > [!IMPORTANT]
 Language Development Status
 
-ScarScript is under active development by Team Scarfaze. Version 1.0.2 adds an initial LSP server entry point for VS Code integration, following the scope and build-cache fixes in v1.0.1.
+ScarScript is under active development by Team Scarfaze. Version 1.0.3 adds loop control flow (`continue`, `break`, `stop`), user-defined structs, type-safe `Option<T>`/`Result<T, E>` handling, and a file-based module system (`import`/`export`).
 
 As we continue expanding our compiler features and standard library, you may encounter new experimental features or updates. We deeply appreciate your contributions and bug reports as we build Pakistan's first high-performance compiled language!
 
