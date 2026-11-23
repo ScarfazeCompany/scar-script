@@ -9,52 +9,69 @@
 </p>
 
 <p align="center">
+  <a href="https://scarscript.scarfaze.com/">
+    <img src="https://img.shields.io/badge/Website-scarscript.scarfaze.com-0A66C2?style=flat-square" alt="Website"/>
+  </a>
+  <a href="https://scarscript.scarfaze.com/playground">
+    <img src="https://img.shields.io/badge/Playground-Wasm%20Beta-00ADD8?style=flat-square" alt="Wasm Playground"/>
+  </a>
   <a href="https://github.com/ScarfazeCompany/scar-script/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/ScarfazeCompany/scar-script/ci.yml?branch=main" alt="CI"/>
+    <img src="https://img.shields.io/github/actions/workflow/status/ScarfazeCompany/scar-script/ci.yml?branch=main&style=flat-square" alt="CI"/>
   </a>
   <a href="https://github.com/ScarfazeCompany/scar-script/releases">
-    <img src="https://img.shields.io/github/v/release/ScarfazeCompany/scar-script" alt="Release"/>
+    <img src="https://img.shields.io/github/v/release/ScarfazeCompany/scar-script?style=flat-square" alt="Release"/>
   </a>
-  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/README.md#-license">
-    <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg" alt="MIT or Apache-2.0 License"/>
+  <a href="https://github.com/ScarfazeCompany/scar-script/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg?style=flat-square" alt="MIT or Apache-2.0 License"/>
   </a>
 </p>
 
 ---
 
-## 📢 Language Development Announcement
+<p align="center">
+  <img src="https://scarscript.scarfaze.com/api/media/mw800shr-595fe8e70c.png" alt="ScarScript v1.0.3 Release Banner" width="100%"/>
+</p>
+
+## 📢 Language Development Status
+📊 **[View Official v1.0.2 Performance Benchmarks](./BENCHMARKS.md)**
 
 > [!IMPORTANT]
-Language Development Status
-
-ScarScript is under active development by Team Scarfaze. Version 1.0.3 adds loop control flow (`continue`, `break`, `stop`), user-defined structs, type-safe `Option<T>`/`Result<T, E>` handling, and a file-based module system (`import`/`export`).
-
-As we continue expanding our compiler features and standard library, you may encounter new experimental features or updates. We deeply appreciate your contributions and bug reports as we build Pakistan's first high-performance compiled language!
-
-— Team Scarfaze
+> **ScarScript v1.0.3 — Dropping Monday, November 23, 2026**
+> 
+> ScarScript is under active development by **Team Scarfaze**. Following the release of **v1.0.2** (which introduced initial Language Server Protocol support for VS Code), we are wrapping up final stability checks, parser edge-case fixes, and performance benchmarks for **v1.0.3**, scheduled for release this **Monday, November 23, 2026**.
+> 
+> Check out the [Version Notes & Migration Guide](https://scarscript.scarfaze.com/docs/reference/migration) and [Engineering Blog](https://scarscript.scarfaze.com/blog) for the latest updates. We appreciate your bug reports, feedback, and contributions as we continue building Pakistan's first high-performance compiled language!
 
 ---
 
-**ScarScript** is a statically-typed, compiled scripting language that transpiles to Go. It combines the readability of Express.js-style syntax with the performance and safety of Go.
+## ⚡ Try ScarScript Online (WebAssembly Playground)
+
+Test ScarScript directly in your browser without installing anything locally—powered by **WebAssembly (Wasm)** and built-in Emmet support:
+
+👉 **[Launch ScarScript Interactive Playground](https://scarscript.scarfaze.com/playground)**
+
+---
+
+**ScarScript** is a statically-typed, compiled programming language that transpiles directly to Go. It combines the clean readability of Express.js-style syntax with the raw execution speed, type safety, and standalone binary compilation of Go.
 
 ### ✨ Key Features
 
 | Feature | Description |
 |---------|-------------|
-| **Express-like Syntax** | `func`, `val`/`mut`/`const`, `for ... in`, `if/else` with braces |
-| **Static Type Checking** | Full compile-time type inference with strict rules |
-| **Multiple Returns** | Go-style `func() (int, bool)` with `val a, b = f()` |
-| **Anonymous Functions** | Closures with capture: `val h = func(x) { ... }` |
-| **`dec` Type** | 64-bit float with int-literal widening (`val x: dec = 4`) |
-| **Built-in Modules** | `math`, `file`, `sys`, `time` — zero dependencies |
-| **Transpiles to Go** | Self-contained `.gen.go` → `go build` / `go run` |
-| **Zero Runtime** | No interpreter, no VM — pure Go binary |
+| **Express-Like Syntax** | Clean, readable constructs (`func`, `val`/`mut`/`const`, `for ... in`, `if/else` with braces) |
+| **Static Type Checking** | Full compile-time type inference with strict safety rules |
+| **Multiple Returns** | Go-style `func() (int, bool)` with clean destructuring `val a, b = f()` |
+| **Anonymous Functions** | First-class closures with variable capture: `val h = func(x) { ... }` |
+| **`dec` Type** | 64-bit floating-point type with integer-literal widening (`val x: dec = 4`) |
+| **Built-in Modules** | Zero-dependency standard modules: `math`, `file`, `sys`, `time` |
+| **Transpiles to Go** | Generates self-contained, `gofmt`-validated `.gen.go` code |
+| **Zero Runtime Overhead** | No interpreter, no VM — compiles straight to a native static binary |
 
 ---
 
 ### ⚡ Performance & Benchmarks
 
-ScarScript **transpiles directly to Go** and compiles to a native binary — delivering **Go-level performance** with a cleaner syntax.
+ScarScript transpiles directly to Go and compiles to native machine code—delivering **Go-level performance** with minimal boilerplate.
 
 **Benchmark:** 10,000,000 loop iterations (`for i in 1..10_000_000 { }`)
 
@@ -65,7 +82,7 @@ ScarScript **transpiles directly to Go** and compiles to a native binary — del
 | **Node.js** (v20) | ~0.95 s | **5.8× slower** | V8 JIT, warmup required |
 | **Python** (3.11) | ~3.8 s | **23× slower** | CPython interpreter |
 
-> **Key Insight:** ScarScript adds **< 7% overhead** vs hand-written Go, while being **6–23× faster** than popular interpreted/JIT languages. No warmup, no JIT — just instant native speed.
+> **Key Insight:** ScarScript adds **less than 7% overhead** compared to hand-written Go, while running **6–23× faster** than popular interpreted and JIT-compiled languages with zero warmup time.
 
 ```bash
 # Reproduce the benchmark
@@ -85,24 +102,45 @@ time ./bench
 
 ### 🚀 Quick Start
 
-**Option 1 — Download Binary (no Go needed):**
+#### 1. System Prerequisite
 
-Grab your platform binary from [Releases](https://github.com/ScarfazeCompany/scar-script/releases):
+> [!NOTE]
+> While downloading the pre-built ScarScript CLI binary gives you the compiler frontend immediately, executing (`scar run`) or compiling (`scar build`) scripts requires the **Go toolchain** (`go` 1.19+) to be installed and available in your system `$PATH`, as ScarScript invokes `go run` and `go build` under the hood.
+> 
+> * **Debian / Ubuntu:** `sudo apt-get install -y golang-go`
+> * **macOS:** `brew install go`
+> * **Windows / Others:** Install from [golang.org](https://golang.org/)
 
-| Platform | File |
-|----------|------|
-| 🪟 Windows | `scar-windows-amd64.exe` |
-| 🐧 Linux | `scar-linux-amd64` |
+#### 2. Install ScarScript
+
+**Option A — Download Pre-built CLI Binary:**
+
+Grab the latest binary for your OS from [GitHub Releases](https://github.com/ScarfazeCompany/scar-script/releases):
+
+| Platform | Binary File |
+|----------|-------------|
+| 🪟 Windows (x64) | `scar-windows-amd64.exe` |
+| 🐧 Linux (x64) | `scar-linux-amd64` |
 | 🍎 macOS (Intel) | `scar-darwin-amd64` |
 | 🍎 macOS (Apple Silicon) | `scar-darwin-arm64` |
 
-**Option 2 — Go Install:**
+**Option B — Install via Go:**
 
 ```bash
-go install github.com/ScarfazeCompany/scar-script/cmd/scar@latest
+go install [github.com/ScarfazeCompany/scar-script/cmd/scar@latest](https://github.com/ScarfazeCompany/scar-script/cmd/scar@latest)
 ```
 
-**Write your first script (hello.scar):**
+**Option C — Build from Source:**
+
+```bash
+# Windows
+.\scripts\build.ps1
+
+# Linux / macOS
+./scripts/build.sh
+```
+
+#### 3. Write & Run Your First Script (`hello.scar`)
 
 ```scar
 func greet(name: str) {
@@ -112,25 +150,14 @@ func greet(name: str) {
 greet("Zawiyar")
 ```
 
-**Run it:**
-
 ```bash
+# Run directly
 scar run hello.scar
-# Hello, Zawiyar!
+# Output: Hello, Zawiyar!
 
-# Build a binary
+# Compile to a standalone native binary
 scar build hello.scar -o hello
 ./hello
-```
-
-**Or build all platforms yourself:**
-
-```bash
-# Windows
-.\scripts\build.ps1
-
-# Linux / macOS
-./scripts/build.sh
 ```
 
 ---
@@ -141,7 +168,7 @@ scar build hello.scar -o hello
 // Variables (immutable by default)
 val name: str = "Zawiyar"
 mut count: int = 0
-const API_URL: str = "https://api.scar.com"
+const API_URL: str = "[https://api.scar.com](https://api.scar.com)"
 
 // Type inference
 val inferred = 42          // int
@@ -188,7 +215,7 @@ print("User {name} is {age} years old")
 val port = sys.env("PORT") or "8080"
 val status = data.status or "unknown"
 
-// Modules
+// Built-in Modules
 val root = math.sqrt(16)           // 4.0
 val rnd  = math.rand(1, 100)
 file.write("log.txt", "started")
@@ -201,40 +228,40 @@ val now  = time.now()
 
 ### 📦 Built-in Modules
 
-| Module | Functions |
-|--------|-----------|
-| **math** | `sqrt(dec) dec`, `pow(dec, dec) dec`, `abs(int) int`, `round(dec) int`, `rand(int, int) int` |
-| **file** | `write(str, str)`, `append(str, str)`, `read(str) str`, `exists(str) bool`, `delete(str)` |
-| **sys** | `env(str) str` |
-| **time** | `now() str`, `sleep(int)` |
+| Module | Available Functions |
+|--------|---------------------|
+| **`math`** | `sqrt(dec) dec`, `pow(dec, dec) dec`, `abs(int) int`, `round(dec) int`, `rand(int, int) int` |
+| **`file`** | `write(str, str)`, `append(str, str)`, `read(str) str`, `exists(str) bool`, `delete(str)` |
+| **`sys`** | `env(str) str` |
+| **`time`** | `now() str`, `sleep(int)` |
 
 ---
 
 ### 🛠 CLI Reference
 
 ```bash
-scar run <file.scar>          # Compile & run (uses temp dir)
-scar build <file.scar> [-o out]  # Build static binary
-scar version                   # Show version
-scar help                      # Show help
+scar run <file.scar>             # Transpile, compile & run immediately
+scar build <file.scar> [-o out]  # Build standalone native binary
+scar version                     # Print installed ScarScript version
+scar help                        # Display CLI help & flags
 ```
 
 ---
 
-### 🏗 How It Works
+### 🏗 Compiler Architecture
 
-```
+```text
 scar run hello.scar
         │
         ▼
 ┌───────────────────┐
-│  Lexer → Parser   │  (panic-based errors, precise positions)
+│  Lexer → Parser   │  (panic-based recovery, exact line/col positions)
 └─────────┬─────────┘
           │
           ▼
 ┌───────────────────┐
-│    Type Checker   │  (phase-1 func registry, full static analysis)
-│  • assigns types  │
+│    Type Checker   │  (phase-1 func registry, static analysis)
+│  • infers types   │
 │  • checks returns │
 │  • tracks unused  │
 └─────────┬─────────┘
@@ -253,30 +280,32 @@ scar run hello.scar
 
 ---
 
-### 📚 Documentation
+### 📚 Documentation & Resources
 
-- 🌐 **[Documentation Site](https://scarscript.scarfaze.com/docs/index.html)** — full docs with sidebar navigation
-- [Getting Started](https://scarscript.scarfaze.com/docs/getting-started.html)
-- [Language Syntax](https://scarscript.scarfaze.com/docs/syntax.html)
-- [Type System](https://scarscript.scarfaze.com/docs/types.html)
-- [Functions](https://scarscript.scarfaze.com/docs/functions.html)
-- [Standard Library](https://scarscript.scarfaze.com/docs/stdlib.html)
-- [CLI Reference](https://scarscript.scarfaze.com/docs/cli.html)
+Explore the official documentation, release history, and community channels:
+
+* 🌐 **[Official Website](https://scarscript.scarfaze.com/)** — Overview, playground, and ecosystem links
+* 📖 **[Documentation Hub](https://scarscript.scarfaze.com/docs)** — Complete language reference
+* 🚀 **[Getting Started](https://scarscript.scarfaze.com/docs/getting-started)** — Installation and first steps
+* 🔤 **[Language Syntax](https://scarscript.scarfaze.com/docs/language/syntax)** — Variables, control flow, and functions
+* 🔄 **[Version Notes & Migration](https://scarscript.scarfaze.com/docs/reference/migration)** — Changelog and upgrade notes
+* ✍️ **[Engineering Blog](https://scarscript.scarfaze.com/blog)** — Architecture deep-dives and updates
+* ℹ️ **[About ScarScript](https://scarscript.scarfaze.com/about)** | **[Contact Team](https://scarscript.scarfaze.com/contact)**
 
 ---
 
 ### 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions, bug reports, and feature suggestions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on submitting pull requests and reporting issues.
 
 ---
 
 ### 📄 License
 
-ScarScript is dual-licensed. You may use it under the terms of either:
+ScarScript is dual-licensed. You may choose to use it under the terms of either:
 
-- [MIT License](LICENSE)
-- [Apache License 2.0](LICENSE-APACHE)
+* [MIT License](LICENSE)
+* [Apache License 2.0](LICENSE-APACHE)
 
 Choose the license that best fits your use case.
 
@@ -284,5 +313,5 @@ Choose the license that best fits your use case.
 
 ### 👨‍💻 Author
 
-**Zawiyar Awan** — Founder, **Scarfaze**  
-Pakistan's First High-Performance Compiled Language with Express-Like Syntax
+**Zawiyar Awan** — Founder & CEO, **[Scarfaze](https://scarfaze.com)**  
+*Building Pakistan's First High-Performance Compiled Language with Express-Like Syntax*
