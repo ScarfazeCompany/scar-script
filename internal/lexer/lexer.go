@@ -124,30 +124,68 @@ func (l *Lexer) scanToken() {
 func (l *Lexer) scanNumber() {
 	line, col := l.line, l.col
 	start := l.pos
-	for l.pos < len(l.src) && l.src[l.pos] >= '0' && l.src[l.pos] <= '9' {
-		l.advance()
-	}
-	// Float only when '.' is immediately followed by a digit, so `1..5`
-	// (int-dotdot-int) keeps scanning as a range operator.
-	if l.pos < len(l.src) && l.src[l.pos] == '.' && l.peek(1) >= '0' && l.peek(1) <= '9' {
-		l.advance() // '.'
-		for l.pos < len(l.src) && l.src[l.pos] >= '0' && l.src[l.pos] <= '9' {
+	hasUnderscore := false
+	// Scan digits, allowing underscore separators (e.g., 10_000_000)
+	// but stop before a dot to check for float later
+	for l.pos < len(l.src) {
+		c := l.src[l.pos]
+		if c >= '0' && c <= '9' {
 			l.advance()
+			hasUnderscore = false
+		} else if c == '_' && !hasUnderscore && l.pos > start {
+			hasUnderscore = true
+			l.advance()
+		} else {
+			break
 		}
-		lit := l.src[start:l.pos]
-		if _, err := strconv.ParseFloat(lit, 64); err != nil {
-			l.fail("float literal %s out of range", lit)
-			return
-		}
-		l.add(token.Token{Type: token.FLOAT, Lit: lit, Line: line, Col: col})
-		return
 	}
 	lit := l.src[start:l.pos]
-	if _, err := strconv.ParseInt(lit, 10, 64); err != nil {
+	// Now check if there's a float part (dot followed by digits)
+	isFloat := false
+	// Check if there's a float part: dot immediately followed by at least one digit
+	// (this avoids consuming the range operator '..')
+	if l.pos < len(l.src) && l.src[l.pos] == '.' && l.pos+1 < len(l.src) && l.src[l.pos+1] >= '0' && l.src[l.pos+1] <= '9' {
+		// Consume the dot and following digits, allowing underscore separators
+		floatStart := l.pos
+		l.advance() // consume '.'
+		hasUnderscore = false
+		digitSeen := false
+		for l.pos < len(l.src) {
+			c := l.src[l.pos]
+			if c >= '0' && c <= '9' {
+				l.advance()
+				digitSeen = true
+				hasUnderscore = false
+			} else if c == '_' && !hasUnderscore && l.pos > floatStart {
+				hasUnderscore = true
+				l.advance()
+			} else {
+				break
+			}
+		}
+		// Only treat as float if we saw at least one digit after the dot
+		if digitSeen {
+			floatLit := l.src[floatStart:l.pos]
+			// Remove underscores and parse
+			cleaned := strings.ReplaceAll(floatLit, "_", "")
+			if _, err := strconv.ParseFloat(cleaned, 64); err != nil {
+				l.fail("float literal %s out of range", lit+floatLit)
+				return
+			}
+			isFloat = true
+			lit += floatLit // include the dot+digits in the literal
+		}
+	}
+	// Remove underscores for value parsing
+	cleaned := strings.ReplaceAll(lit, "_", "")
+	if isFloat {
+		l.add(token.Token{Type: token.FLOAT, Lit: lit, Line: line, Col: col})
+	} else if _, err := strconv.ParseInt(cleaned, 10, 64); err != nil {
 		l.fail("integer literal %s out of range", lit)
 		return
+	} else {
+		l.add(token.Token{Type: token.INT, Lit: lit, Line: line, Col: col})
 	}
-	l.add(token.Token{Type: token.INT, Lit: lit, Line: line, Col: col})
 }
 
 func isIdentStart(b byte) bool {

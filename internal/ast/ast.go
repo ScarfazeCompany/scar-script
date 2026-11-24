@@ -271,6 +271,9 @@ type BlockStmt struct {
 	Stmts []Stmt
 }
 
+func (b *BlockStmt) Pos() diag.Position    { return b.P }
+func (b *BlockStmt) exprNode()            {}
+
 type IfStmt struct {
 	P    diag.Position
 	Cond Expr
@@ -313,7 +316,6 @@ func (s *MultiDeclStmt) Pos() diag.Position   { return s.P }
 func (s *AssignStmt) Pos() diag.Position      { return s.P }
 func (s *AssignFieldStmt) Pos() diag.Position { return s.P }
 func (s *IncDecStmt) Pos() diag.Position      { return s.P }
-func (s *BlockStmt) Pos() diag.Position       { return s.P }
 func (s *IfStmt) Pos() diag.Position          { return s.P }
 func (s *ForStmt) Pos() diag.Position         { return s.P }
 func (s *ExprStmt) Pos() diag.Position        { return s.P }
@@ -337,6 +339,25 @@ func (s *ContinueStmt) Pos() diag.Position { return s.P }
 
 func (*BreakStmt) stmtNode()    {}
 func (*ContinueStmt) stmtNode() {}
+
+// MatchStmt is `match <expr> { <arms> }`.
+type MatchStmt struct {
+	P     diag.Position
+	Expr  Expr
+	Arms  []MatchArm
+}
+
+// MatchArm is one arm of a match expression: Pattern => Body.
+type MatchArm struct {
+	P     diag.Position
+	Pattern string // the matched pattern (literal or "_")
+	Body    Expr   // the body expression or block
+}
+
+func (s *MatchStmt) Pos() diag.Position     { return s.P }
+func (a *MatchArm) Pos() diag.Position      { return a.P }
+func (*MatchStmt) stmtNode()   {}
+func (*MatchArm) exprNode()    {}
 
 // ---------- New: Structs ----------
 

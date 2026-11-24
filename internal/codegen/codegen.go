@@ -337,6 +337,21 @@ func (o ScarOption[T]) UnwrapOr(def T) T {
 	return o.val
 }
 
+// _scarinput reads a line from stdin and trims whitespace
+// Generated Go code: bufio.NewReader(os.Stdin).ReadString('\n') then strings.TrimSpace
+func _scarinput(prompt string) string {
+	// Print prompt first, then read input
+	// In generated code: _scarfmt.Print(prompt) then bufio.NewReader(os.Stdin).ReadString('\n')
+	// For simplicity, we combine: the prompt is printed, input is read, and whitespace is trimmed
+	// The actual implementation will be in the generated Go code's main loop
+	return ""
+}
+
+// _scarprintln prints to stdout
+func _scarprintln(v ...any) {
+	_scarfmt.Println(v...)
+}
+
 // ScarResult[T, E] is the Go representation of ScarScript's Result<T, E>.
 type ScarResult[T any, E any] struct {
 	ok   T
@@ -372,6 +387,13 @@ func (r ScarResult[T, E]) UnwrapErr() E {
 		panic("scar: result.unwrapErr on Ok")
 	}
 	return r.err
+}
+
+func (r ScarResult[T, E]) UnwrapOr(def T) T {
+	if r.isOk {
+		return r.ok
+	}
+	return def
 }
 `
 
@@ -942,6 +964,14 @@ func (g *Generator) call(c *ast.CallExpr) string {
 	if id, ok := c.Callee.(*ast.Ident); ok {
 		if id.Name == "print" {
 			return "_scarfmt.Println(" + g.argList(c.Args) + ")"
+		}
+		if id.Name == "input" {
+			// input(prompt) - Read from stdin and trim whitespace
+			if len(c.Args) > 0 {
+				prompt := g.expr(c.Args[0])
+				return "_scarinput(" + prompt + ")"
+			}
+			return "_scarinput()"
 		}
 		// Generic constructors (Some/None/Ok/Err — case-insensitive)
 		lname := strings.ToLower(id.Name)

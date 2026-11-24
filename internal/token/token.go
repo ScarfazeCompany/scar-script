@@ -35,6 +35,10 @@ const (
 	CONTINUE Type = "continue"
 	BREAK    Type = "break"
 	STOP     Type = "stop"
+	// Built-in functions
+	INPUT    Type = "input"
+	// Pattern matching
+	MATCH    Type = "match"
 	// Structs
 	STRUCT Type = "struct"
 	// Generics
