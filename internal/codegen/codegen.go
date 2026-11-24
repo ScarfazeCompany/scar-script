@@ -25,6 +25,7 @@ type Generator struct {
 	needMath     bool
 	needRand     bool
 	needTime     bool
+	needInput    bool
 	pkgLevelVars map[string]*ast.DeclStmt
 	pass1        bool // true during first pass (flag collection)
 	// fnResultGo is the generated Go result type of the innermost emitted function.
@@ -87,6 +88,9 @@ func (g *Generator) generate(prog *ast.Program) {
 	if g.needStrings {
 		g.raw("\t_scarstrings \"strings\"\n")
 	}
+	if g.needInput {
+		g.raw("\t_scarbufio \"bufio\"\n")
+	}
 	if g.needMath {
 		g.raw("\t_scarmath \"math\"\n")
 	}
@@ -121,30 +125,70 @@ func (g *Generator) generate(prog *ast.Program) {
 		}
 	}
 
-	// Top-level functions are emitted before main.
+	// Top-level functions are emitted before main. Exported functions are
+	// wrapped in *ast.ExportDecl by the module bundler, so unwrap them here.
+	userMain := false
 	for _, s := range prog.Stmts {
-		if fd, ok := s.(*ast.FuncDecl); ok {
-			g.funcDecl(fd)
-		}
-	}
-
-	g.raw("\nfunc main() {\n")
-	g.ind++
-	for _, s := range prog.Stmts {
-		if _, ok := s.(*ast.FuncDecl); ok {
+		fd := topLevelFunc(s)
+		if fd == nil {
 			continue
 		}
-		// Skip package-level vars in main (already emitted at package level)
-		// Only skip in pass 2; in pass 1 we need to type-check initializers for flag collection.
-		if d, ok := s.(*ast.DeclStmt); ok {
-			if g.isPkgLevel(d) && !g.pass1 {
-				continue
-			}
+		if fd.Name == "main" {
+			userMain = true
 		}
-		g.stmt(s)
+		g.funcDecl(fd)
+	}
+
+	// Emit top-level statements. When the program defines its own main, put
+	// them in init() so they still run before it and we never generate a
+	// duplicate func main.
+	entry := "main"
+	if userMain {
+		entry = "init"
+	}
+	g.raw(fmt.Sprintf("\nfunc %s() {\n", entry))
+	g.ind++
+	for _, s := range prog.Stmts {
+		inner := topLevelInner(s)
+		switch inner.(type) {
+		case *ast.FuncDecl, *ast.StructDecl, *ast.ImportStmt:
+			continue
+		}
+		// Package-level vars are emitted at package level; skip them here.
+		// In pass 1 they are still visited to collect flags/initializers.
+		if d, ok := inner.(*ast.DeclStmt); ok && g.isPkgLevel(d) {
+			if g.pass1 {
+				g.stmt(d)
+			}
+			continue
+		}
+		g.stmt(inner)
 	}
 	g.ind--
 	g.raw("}\n")
+}
+
+// topLevelFunc returns the function declared by a top-level statement,
+// unwrapping *ast.ExportDecl (used by the module bundler for exports).
+func topLevelFunc(s ast.Stmt) *ast.FuncDecl {
+	switch d := s.(type) {
+	case *ast.FuncDecl:
+		return d
+	case *ast.ExportDecl:
+		if fd, ok := d.Decl.(*ast.FuncDecl); ok {
+			return fd
+		}
+	}
+	return nil
+}
+
+// topLevelInner unwraps an *ast.ExportDecl so callers see the declaration
+// it wraps (function, struct, var/const, etc.).
+func topLevelInner(s ast.Stmt) ast.Stmt {
+	if ed, ok := s.(*ast.ExportDecl); ok {
+		return ed.Decl
+	}
+	return s
 }
 
 // emitOptionalHelpers adds helpers that depend on conditionally imported
@@ -155,6 +199,9 @@ func (g *Generator) emitOptionalHelpers() {
 	}
 	if g.needRand {
 		g.raw(scarRandHelper)
+	}
+	if g.needInput {
+		g.raw(scarInputHelper)
 	}
 }
 
@@ -337,16 +384,6 @@ func (o ScarOption[T]) UnwrapOr(def T) T {
 	return o.val
 }
 
-// _scarinput reads a line from stdin and trims whitespace
-// Generated Go code: bufio.NewReader(os.Stdin).ReadString('\n') then strings.TrimSpace
-func _scarinput(prompt string) string {
-	// Print prompt first, then read input
-	// In generated code: _scarfmt.Print(prompt) then bufio.NewReader(os.Stdin).ReadString('\n')
-	// For simplicity, we combine: the prompt is printed, input is read, and whitespace is trimmed
-	// The actual implementation will be in the generated Go code's main loop
-	return ""
-}
-
 // _scarprintln prints to stdout
 func _scarprintln(v ...any) {
 	_scarfmt.Println(v...)
@@ -394,6 +431,43 @@ func (r ScarResult[T, E]) UnwrapOr(def T) T {
 		return r.ok
 	}
 	return def
+}
+
+// _scar_result_unwrap_or / _scar_option_unwrap_or are used when the
+// receiver's value type is unresolved (any, e.g. a bare Err(...) or None).
+// The fallback argument then determines the concrete result type.
+func _scar_result_unwrap_or[T any, E any, D any](r ScarResult[T, E], def D) D {
+	if r.isOk {
+		if v, ok := any(r.ok).(D); ok {
+			return v
+		}
+	}
+	return def
+}
+
+func _scar_option_unwrap_or[T any, D any](o ScarOption[T], def D) D {
+	if o.isOk {
+		if v, ok := any(o.val).(D); ok {
+			return v
+		}
+	}
+	return def
+}
+`
+
+// scarInputHelper is emitted only when input() is used (needs bufio + strings).
+const scarInputHelper = `
+var _scar_stdin = _scarbufio.NewReader(_scaros.Stdin)
+
+func _scarinput(prompt string) string {
+	if prompt != "" {
+		_scarfmt.Print(prompt)
+	}
+	line, err := _scar_stdin.ReadString('\n')
+	if err != nil && line == "" {
+		return ""
+	}
+	return _scarstrings.TrimSpace(line)
 }
 `
 
@@ -763,6 +837,11 @@ func (g *Generator) expr(e ast.Expr) string {
 		return "false"
 	case *ast.Ident:
 		if strings.ToLower(x.Name) == "none" {
+			// Emit an explicit type argument when the checker resolved the
+			// element type; `_scar_none()` alone cannot infer T in Go.
+			if opt, ok := g.typ[x].(*types.Option); ok {
+				return "_scar_none[" + g.goType(opt.Elem) + "]()"
+			}
 			return "_scar_none()"
 		}
 		return x.Name
@@ -966,12 +1045,12 @@ func (g *Generator) call(c *ast.CallExpr) string {
 			return "_scarfmt.Println(" + g.argList(c.Args) + ")"
 		}
 		if id.Name == "input" {
-			// input(prompt) - Read from stdin and trim whitespace
+			g.needInput = true
+			g.needStrings = true // strings.TrimSpace
 			if len(c.Args) > 0 {
-				prompt := g.expr(c.Args[0])
-				return "_scarinput(" + prompt + ")"
+				return "_scarinput(" + g.expr(c.Args[0]) + ")"
 			}
-			return "_scarinput()"
+			return "_scarinput(\"\")"
 		}
 		// Generic constructors (Some/None/Ok/Err — case-insensitive)
 		lname := strings.ToLower(id.Name)
@@ -1057,6 +1136,9 @@ func (g *Generator) call(c *ast.CallExpr) string {
 		case "unwrap":
 			return recv + ".Unwrap()"
 		case "unwrapOr":
+			if types.Equal(t.Elem, types.AnyType) {
+				return "_scar_option_unwrap_or(" + recv + ", " + g.argList(c.Args) + ")"
+			}
 			return recv + ".UnwrapOr(" + g.argList(c.Args) + ")"
 		}
 	case *types.Result:
@@ -1070,6 +1152,9 @@ func (g *Generator) call(c *ast.CallExpr) string {
 		case "unwrapErr":
 			return recv + ".UnwrapErr()"
 		case "unwrapOr":
+			if types.Equal(t.Ok, types.AnyType) {
+				return "_scar_result_unwrap_or(" + recv + ", " + g.argList(c.Args) + ")"
+			}
 			return recv + ".UnwrapOr(" + g.argList(c.Args) + ")"
 		}
 	}

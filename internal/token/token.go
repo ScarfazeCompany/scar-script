@@ -36,9 +36,7 @@ const (
 	BREAK    Type = "break"
 	STOP     Type = "stop"
 	// Built-in functions
-	INPUT    Type = "input"
-	// Pattern matching
-	MATCH    Type = "match"
+	INPUT Type = "input"
 	// Structs
 	STRUCT Type = "struct"
 	// Generics

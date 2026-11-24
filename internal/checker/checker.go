@@ -45,6 +45,7 @@ type Checker struct {
 	loopDepth  int                      // >0 while inside a for loop
 	blockDepth int                      // nesting of blocks (top level == 0)
 	curResult  types.Type               // result type of the current function
+	funcScope  *scope                   // scope of the current function body
 }
 
 // Result carries everything the code generator needs after a successful
@@ -93,6 +94,10 @@ func Check(prog *ast.Program) (res *Result, err *diag.Error) {
 	for _, s := range prog.Stmts {
 		if fd, ok := s.(*ast.FuncDecl); ok {
 			c.registerFunc(fd)
+		} else if ed, ok := s.(*ast.ExportDecl); ok {
+			if fd, ok := ed.Decl.(*ast.FuncDecl); ok {
+				c.registerFunc(fd)
+			}
 		}
 	}
 	for _, s := range prog.Stmts {
@@ -144,7 +149,7 @@ func isModule(name string) bool {
 }
 
 func isBuiltin(name string) bool {
-	return name == "print" || name == "log" || isModule(name)
+	return name == "print" || name == "log" || name == "input" || isModule(name)
 }
 
 var goKeywords = map[string]bool{
@@ -495,6 +500,13 @@ func (c *Checker) lookupVar(name string, pos diag.Position) *varInfo {
 		}
 		c.fail(pos, "undefined variable %q", name)
 	}
+	// Writes (assignment, field assignment, ++/--) follow the same rule as
+	// reads: a named function cannot touch package-scope mutable variables.
+	if c.inFunc > 0 && !c.isFuncLocal(info) {
+		if !info.isConst && (!info.isLiteral || info.mut) {
+			c.fail(pos, "undefined variable %q (only const and immutable val with literal initializers accessible in functions)", name)
+		}
+	}
 	return info
 }
 
@@ -589,12 +601,15 @@ func (c *Checker) checkFuncDecl(fd *ast.FuncDecl) {
 	oldResult := c.curResult
 	c.curResult = sig.Result
 	oldScope := c.scope
+	oldFuncScope := c.funcScope
 	// Use a scope with global parent so constants and immutable vars are visible
 	// but still isolate mutable variables (they'll be declared in function scope if shadowed)
 	c.scope = &scope{parent: oldScope, vars: map[string]*varInfo{}}
+	c.funcScope = c.scope
 	c.declareParams(fd.Params)
 	c.checkFuncBody(fd.Body, fd.NamePos, sig.Result)
 	c.scope = oldScope
+	c.funcScope = oldFuncScope
 	c.curResult = oldResult
 	c.inFunc--
 }
@@ -611,9 +626,12 @@ func (c *Checker) checkFuncLit(fl *ast.FuncLit) types.Type {
 	c.inFunc++
 	oldResult := c.curResult
 	c.curResult = ft.Result
+	oldFuncScope := c.funcScope
 	c.push() // anonymous functions capture the enclosing scope
+	c.funcScope = c.scope
 	c.declareParams(fl.Params)
 	c.checkFuncBody(fl.Body, fl.P, ft.Result)
+	c.funcScope = oldFuncScope
 	c.pop()
 	c.curResult = oldResult
 	c.inFunc--
@@ -744,6 +762,10 @@ func (c *Checker) resolveType(te ast.TypeExpr) types.Type {
 			c.fail(t.Key.Pos(), "map key must be 'str' or 'int', got %q", k)
 		}
 		return &types.Map{Key: k, Val: c.resolveType(t.Val)}
+	case *ast.OptionTypeExpr:
+		return &types.Option{Elem: c.resolveType(t.Elem)}
+	case *ast.ResultTypeExpr:
+		return &types.Result{Ok: c.resolveType(t.Ok), Err: c.resolveType(t.Err)}
 	case *ast.TupleTypeExpr:
 		c.fail(t.P, "tuple types can only be used as a function return type")
 	case *ast.StructTypeExpr:
@@ -869,6 +891,21 @@ func (c *Checker) checkStrLit(s *ast.StrLit) types.Type {
 	return types.StrType
 }
 
+// isFuncLocal reports whether info was declared inside the current function
+// body, including any enclosing block within that function. Variables from
+// outside the function (package/global scope) are not local.
+func (c *Checker) isFuncLocal(info *varInfo) bool {
+	for sc := c.scope; sc != nil; sc = sc.parent {
+		if sc.vars[info.name] == info {
+			return true
+		}
+		if sc == c.funcScope {
+			return false
+		}
+	}
+	return false
+}
+
 func (c *Checker) checkIdent(id *ast.Ident, expected types.Type) types.Type {
 	if id.Name == "print" {
 		c.fail(id.P, "'print' is a builtin function — call it like print(...)")
@@ -893,14 +930,13 @@ func (c *Checker) checkIdent(id *ast.Ident, expected types.Type) types.Type {
 		}
 		c.fail(id.P, "undefined variable %q", id.Name)
 	}
-	// In function scope: only allow access to parent scope vars if they are const or val with literal initializers
-	if c.inFunc > 0 {
-		// Check if the variable is in the current (function) scope
-		if _, inCurrentScope := c.scope.vars[id.Name]; !inCurrentScope {
-			// Variable is from parent scope - only allow const or literal-initialized vals (not mut)
-			if !info.isConst && (!info.isLiteral || info.mut) {
-				c.fail(id.P, "undefined variable %q (only const and immutable val with literal initializers accessible in functions)", id.Name)
-			}
+	// In function scope: variables declared outside the current function
+	// (package scope) are only accessible when they are const or val with
+	// literal initializers. Function locals remain accessible from any
+	// nested block (if/for/etc.).
+	if c.inFunc > 0 && !c.isFuncLocal(info) {
+		if !info.isConst && (!info.isLiteral || info.mut) {
+			c.fail(id.P, "undefined variable %q (only const and immutable val with literal initializers accessible in functions)", id.Name)
 		}
 	}
 	info.used = true
@@ -1142,6 +1178,16 @@ func (c *Checker) checkBuiltinCall(id *ast.Ident, call *ast.CallExpr, expected t
 			c.exprVal(a, nil)
 		}
 		return types.VoidType
+	}
+	if id.Name == "input" {
+		// input(prompt) - 0 or 1 argument, returns str
+		if len(call.Args) > 1 {
+			c.fail(call.P, "expected 0 or 1 argument, got %d", len(call.Args))
+		}
+		if len(call.Args) == 1 {
+			c.exprVal(call.Args[0], nil)
+		}
+		return types.StrType
 	}
 	// Generic constructors (Some/None/Ok/Err — case-insensitive)
 	lname := strings.ToLower(id.Name)
@@ -1393,9 +1439,18 @@ func (c *Checker) checkOptionMethod(opt *types.Option, m *ast.MemberExpr, call *
 		return opt.Elem
 	case "unwrapOr":
 		c.nargs(call, 1)
-		t := c.exprVal(call.Args[0], opt.Elem)
+		// When the receiver's element type is unresolved (`any`, e.g. a bare
+		// `None`), the fallback argument determines the result type.
+		expected := opt.Elem
+		if types.Equal(expected, types.AnyType) {
+			expected = nil
+		}
+		t := c.exprVal(call.Args[0], expected)
 		if !assignableVal(opt.Elem, t, call.Args[0]) {
 			c.fail(call.Args[0].Pos(), "unwrapOr expects %s, got %s", opt.Elem, t)
+		}
+		if types.Equal(opt.Elem, types.AnyType) {
+			return t
 		}
 		return opt.Elem
 	default:
@@ -1417,9 +1472,18 @@ func (c *Checker) checkResultMethod(res *types.Result, m *ast.MemberExpr, call *
 		return res.Err
 	case "unwrapOr":
 		c.nargs(call, 1)
-		t := c.exprVal(call.Args[0], res.Ok)
+		// When the receiver's ok type is unresolved (`any`, e.g. a bare
+		// `Err(...)`), the fallback argument determines the result type.
+		expected := res.Ok
+		if types.Equal(expected, types.AnyType) {
+			expected = nil
+		}
+		t := c.exprVal(call.Args[0], expected)
 		if !assignableVal(res.Ok, t, call.Args[0]) {
 			c.fail(call.Args[0].Pos(), "unwrapOr expects %s, got %s", res.Ok, t)
+		}
+		if types.Equal(res.Ok, types.AnyType) {
+			return t
 		}
 		return res.Ok
 	default:

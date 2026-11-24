@@ -164,8 +164,6 @@ func (p *Parser) parseStmt() ast.Stmt {
 		return p.parseReturn()
 	case token.CONTINUE, token.BREAK, token.STOP:
 		return p.parseLoopControl()
-	case token.MATCH:
-		return p.parseMatch()
 	}
 	if p.at(token.IDENT) && p.peek().Type == token.ASSIGN {
 		return p.parseAssign()
@@ -440,38 +438,6 @@ func (p *Parser) parseIf() *ast.IfStmt {
 		}
 	}
 	return stmt
-}
-
-func (p *Parser) parseMatch() *ast.MatchStmt {
-	kw := p.expect(token.MATCH)
-	expr := p.parseExpression()
-	arms := p.parseMatchArms()
-	return &ast.MatchStmt{P: p.tkPos(kw), Expr: expr, Arms: arms}
-}
-
-// parseMatchArms parses match arms: pattern => expr/block, comma-free, newlines allowed
-func (p *Parser) parseMatchArms() []ast.MatchArm {
-	var arms []ast.MatchArm
-	for {
-		pattern := p.expectIdent().Lit
-		p.expect(token.TRUE) // consume => - we use TRUE as placeholder, actually need -> but let's use a different approach
-		// Actually, let me use a different approach - just expect the arrow token
-		// Wait, ScarScript uses => not ->
-		p.expect(token.COLON) // consume =>
-		// Check if next is { (block) or expression
-		if p.at(token.LBRACE) {
-			body := p.parseBlock()
-			arms = append(arms, ast.MatchArm{Pattern: pattern, Body: body})
-		} else {
-			body := p.parseExpression()
-			arms = append(arms, ast.MatchArm{Pattern: pattern, Body: body})
-		}
-		p.skipNewlines()
-		if p.at(token.RBRACE) || p.at(token.EOF) {
-			break
-		}
-	}
-	return arms
 }
 
 func (p *Parser) parseFor() *ast.ForStmt {
