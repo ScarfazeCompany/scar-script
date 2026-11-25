@@ -1,0 +1,8 @@
+﻿# Treat .scar files as ScarScript source code in GitHub language stats
+*.scar linguist-language=ScarScript
+
+# Ensure examples are counted toward language breakdown
+examples/** linguist-detectable=true
+
+# Exclude compiled binaries and generated files from language percentage
+*.exe linguist-generated=true
