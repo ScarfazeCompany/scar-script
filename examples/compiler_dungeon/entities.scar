@@ -1,0 +1,16 @@
+// entities.scar
+export struct Hero {
+    name: str,
+    hp: int,
+    maxHp: int,
+    energy: int,
+    potions: int,
+    score: int
+}
+
+export struct Boss {
+    name: str,
+    hp: int,
+    attackPower: int,
+    enraged: bool
+}

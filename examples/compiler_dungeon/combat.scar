@@ -1,0 +1,34 @@
+// combat.scar
+import { Hero, Boss } from "./entities.scar"
+
+export func calculatePlayerDamage(action: str, energy: int) -> int {
+    if action == "1" {
+        return 18
+    }
+    if action == "2" {
+        if energy >= 25 {
+            return 36
+        }
+        return 0
+    }
+    return 0
+}
+
+export func calculateBossDamage(bossAttack: int, bossEnraged: bool, turn: int) -> int {
+    mut dmg = bossAttack
+    if bossEnraged {
+        dmg = dmg + 8
+    }
+    if (turn % 3) == 0 {
+        dmg = dmg + 6
+    }
+    return dmg
+}
+
+export func renderHealthBar(label: str, current: int, max: int) -> str {
+    mut safeHp = current
+    if safeHp < 0 {
+        safeHp = 0
+    }
+    return "[{label}] HP: {safeHp}/{max}"
+}

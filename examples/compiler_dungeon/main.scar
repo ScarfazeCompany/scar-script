@@ -1,0 +1,115 @@
+// main.scar
+import { Hero, Boss } from "./entities.scar"
+import { calculatePlayerDamage, calculateBossDamage, renderHealthBar } from "./combat.scar"
+
+func main() {
+    print("====================================================")
+    print("   SCARSCRIPT v1.0.3 — THE COMPILER DUNGEON (RPG)   ")
+    print("====================================================")
+
+    val heroName = input("Enter your Engineer Name: ")
+
+    mut player = Hero {
+        name: heroName,
+        hp: 100,
+        maxHp: 100,
+        energy: 60,
+        potions: 2,
+        score: 0
+    }
+
+    mut enemy = Boss {
+        name: "NullPointer Leviathan",
+        hp: 120,
+        attackPower: 14,
+        enraged: false
+    }
+
+    mut turn = 1
+    mut defending = false
+
+    print("\nA wild {enemy.name} blocks the production deployment!")
+    print("Defeat it before your system crashes.\n")
+
+    for player.hp > 0 and enemy.hp > 0 {
+        print("---------------- TURN {turn} ----------------")
+        print(renderHealthBar(player.name, player.hp, player.maxHp))
+        print("Energy: {player.energy} | Debug Patches (Potions): {player.potions}")
+        print(renderHealthBar(enemy.name, enemy.hp, 120))
+        print("----------------------------------------")
+        print("Choose your action:")
+        print("  [1] Quick Patch      (18 DMG | +10 Energy)")
+        print("  [2] Overclock Strike (36 DMG | Costs 25 Energy)")
+        print("  [3] Firewall Shield  (Block 70% incoming DMG | +15 Energy)")
+        print("  [4] Apply Hotfix     (Restore 35 HP | Uses 1 Patch)")
+
+        val choice = input("Action [1-4]: ")
+        defending = false
+
+        if choice == "1" {
+            val dmg = calculatePlayerDamage("1", player.energy)
+            enemy.hp = enemy.hp - dmg
+            player.energy = player.energy + 10
+            player.score = player.score + 15
+            print("\n>> {player.name} executes Quick Patch for {dmg} DMG! (+10 Energy)")
+        } else if choice == "2" {
+            if player.energy >= 25 {
+                val dmg = calculatePlayerDamage("2", player.energy)
+                enemy.hp = enemy.hp - dmg
+                player.energy = player.energy - 25
+                player.score = player.score + 35
+                print("\n>> CRITICAL! {player.name} unleashes Overclock Strike for {dmg} DMG!")
+            } else {
+                print("\n>> Not enough energy! Turn wasted recharging (+15 Energy).")
+                player.energy = player.energy + 15
+            }
+        } else if choice == "3" {
+            defending = true
+            player.energy = player.energy + 15
+            print("\n>> {player.name} raises Firewall Shield! (+15 Energy)")
+        } else if choice == "4" {
+            if player.potions > 0 {
+                player.potions = player.potions - 1
+                player.hp = player.hp + 35
+                if player.hp > player.maxHp {
+                    player.hp = player.maxHp
+                }
+                print("\n>> Hotfix applied! HP restored to {player.hp}/{player.maxHp}.")
+            } else {
+                print("\n>> No Debug Patches left! You fumble and lose your turn.")
+            }
+        } else {
+            print("\n>> Invalid command! System stalls for a turn.")
+            continue
+        }
+
+        // Check if Boss entered Enrage Phase below 50 HP
+        if enemy.hp > 0 and enemy.hp <= 50 and !enemy.enraged {
+            enemy.enraged = true
+            print("!! WARNING: {enemy.name} entered ENRAGED MODE (+8 ATK) !!")
+        }
+
+        // Boss Counter-Attack if still alive
+        if enemy.hp > 0 {
+            mut bossDmg = calculateBossDamage(enemy.attackPower, enemy.enraged, turn)
+            if defending {
+                bossDmg = bossDmg / 3
+                print(">> Firewall Shield absorbed most of the hit!")
+            }
+            player.hp = player.hp - bossDmg
+            print(">> {enemy.name} strikes back for {bossDmg} DMG!\n")
+        }
+
+        turn = turn + 1
+    }
+
+    print("====================================================")
+    if player.hp > 0 {
+        val finalScore = player.score + (player.hp * 2)
+        print("VICTORY! {player.name} defeated {enemy.name} in {turn - 1} turns!")
+        print("Final Engineering Score: {finalScore}")
+    } else {
+        print("SYSTEM CRASHED! {enemy.name} overwhelmed {player.name} on turn {turn - 1}.")
+    }
+    print("====================================================")
+}
